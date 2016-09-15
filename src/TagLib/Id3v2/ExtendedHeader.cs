@@ -28,6 +28,10 @@
 using System.Collections;
 using System;
 
+#if netstandard1_4
+using TagLib.Core;
+#endif
+
 namespace TagLib.Id3v2
 {
 	/// <summary>
@@ -40,7 +44,7 @@ namespace TagLib.Id3v2
 		///    Contains the size of the read header.
 		/// </summary>
 		private uint size;
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="ExtendedHeader"/> with no contents.
@@ -48,7 +52,7 @@ namespace TagLib.Id3v2
 		public ExtendedHeader ()
 		{
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="ExtendedHeader" /> by reading the raw contents from
@@ -65,7 +69,7 @@ namespace TagLib.Id3v2
 		{
 			Parse (data, version);
 		}
-		
+
 		/// <summary>
 		///    Gets the size of the data on disk in bytes.
 		/// </summary>
@@ -76,7 +80,7 @@ namespace TagLib.Id3v2
 		public uint Size {
 			get {return size;}
 		}
-		
+
 		/// <summary>
 		///    Populates the current instance with the contents of the
 		///    raw ID3v2 frame.
@@ -92,12 +96,12 @@ namespace TagLib.Id3v2
 		{
 			if (data == null)
 				throw new ArgumentNullException ("data");
-			
+
 			size = (version == 3 ? 4u : 0u) + SynchData.ToUInt (data.Mid (0, 4));
 		}
-		
+
 #region ICloneable
-		
+
 		/// <summary>
 		///    Creates a deep copy of the current instance.
 		/// </summary>
@@ -111,12 +115,12 @@ namespace TagLib.Id3v2
 			header.size = size;
 			return header;
 		}
-		
+
 		object ICloneable.Clone ()
 		{
 			return Clone ();
 		}
-		
+
 #endregion
 	}
 }

@@ -10,7 +10,7 @@
 //
 // Copyright (C) 2005-2007 Brian Nickel
 // Copyright (C) 2004 Allan Sandfeld Jensen (Original Implementation)
-// 
+//
 // This library is free software; you can redistribute it and/or modify
 // it  under the terms of the GNU Lesser General Public License version
 // 2.1 as published by the Free Software Foundation.
@@ -39,9 +39,9 @@ namespace TagLib.Ape {
 	/// </summary>
 	public class Tag : TagLib.Tag, IEnumerable<string>
 	{
-		
+
 #region Private Static Fields
-		
+
 		/// <summary>
 		///    Contains names of picture fields, indexed to correspond
 		///    to their picture item names.
@@ -69,29 +69,29 @@ namespace TagLib.Ape {
 			"Cover Art (band logo)",
 			"Cover Art (publisher logo)"
 		};
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Private Fields
-		
+
 		/// <summary>
 		///    Contains the tag footer.
 		/// </summary>
 		private Footer footer = new Footer ();
-		
+
 		/// <summary>
 		///    Contains the items in the tag.
 		/// </summary>
 		private List<Item> items = new List<Item> ();
-		
+
 		#endregion
-		
-		
-		
+
+
+
 		#region Public Static Properties
-		
+
 		/// <summary>
 		///    Specifies the identifier used find an APEv2 tag in a
 		///    file.
@@ -102,13 +102,13 @@ namespace TagLib.Ape {
 		[Obsolete("Use Footer.FileIdentifer")]
 		public static readonly ReadOnlyByteVector FileIdentifier =
 			Footer.FileIdentifier;
-		
+
 		#endregion
-		
-		
-		
+
+
+
 		#region Constructors
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="Tag" /> with no contents.
@@ -116,7 +116,7 @@ namespace TagLib.Ape {
 		public Tag ()
 		{
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="Tag" /> by reading the contents from a specified
@@ -142,15 +142,15 @@ namespace TagLib.Ape {
 		{
 			if (file == null)
 				throw new ArgumentNullException ("file");
-			
+
 			if (position < 0 ||
 				position > file.Length - Footer.Size)
 				throw new ArgumentOutOfRangeException (
 					"position");
-			
+
 			Read (file, position);
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="Tag" /> by reading the contents of a raw tag in a
@@ -172,38 +172,38 @@ namespace TagLib.Ape {
 		{
 			if (data == null)
 				throw new ArgumentNullException ("data");
-			
+
 			if (data.Count < Footer.Size)
 				throw new CorruptFileException (
 					"Does not contain enough footer data.");
-			
+
 			footer = new Footer (
 				data.Mid ((int) (data.Count - Footer.Size)));
-			
+
 			if (footer.TagSize == 0)
 				throw new CorruptFileException (
 					"Tag size out of bounds.");
-			
+
 			// If we've read a header at the end of the block, the
 			// block is invalid.
 			if ((footer.Flags & FooterFlags.IsHeader) != 0)
 				throw new CorruptFileException (
 					"Footer was actually header.");
-			
+
 			if (data.Count < footer.TagSize)
 				throw new CorruptFileException (
 					"Does not contain enough tag data.");
-			
+
 			Parse (data.Mid ((int) (data.Count - footer.TagSize),
 				(int) (footer.TagSize - Footer.Size)));
 		}
-		
+
 		#endregion
-		
-		
-		
+
+
+
 		#region Public Properties
-		
+
 		/// <summary>
 		///    Gets and sets whether or not the current instance has a
 		///    header when rendered.
@@ -224,13 +224,13 @@ namespace TagLib.Ape {
 					footer.Flags &= ~FooterFlags.HeaderPresent;
 			}
 		}
-		
+
 		#endregion
-		
-		
-		
+
+
+
 		#region Public Methods
-		
+
 		/// <summary>
 		///    Adds a number to the value stored in a specified item.
 		/// </summary>
@@ -262,7 +262,7 @@ namespace TagLib.Ape {
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
+
 			if (number == 0 && count == 0)
 				return;
 			else if (count != 0)
@@ -273,7 +273,7 @@ namespace TagLib.Ape {
 				AddValue (key, number.ToString (
 					CultureInfo.InvariantCulture));
 		}
-		
+
 		/// <summary>
 		///    Stores a number in a specified item.
 		/// </summary>
@@ -305,7 +305,7 @@ namespace TagLib.Ape {
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
+
 			if (number == 0 && count == 0)
 				RemoveItem (key);
 			else if (count != 0)
@@ -316,7 +316,7 @@ namespace TagLib.Ape {
 				SetValue (key, number.ToString (
 					CultureInfo.InvariantCulture));
 		}
-		
+
 		/// <summary>
 		///    Adds the contents of a <see cref="string" /> to the value
 		///    stored in a specified item.
@@ -340,13 +340,13 @@ namespace TagLib.Ape {
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
+
 			if (string.IsNullOrEmpty (value))
 				return;
-			
+
 			AddValue (key, new string [] {value});
 		}
-		
+
 		/// <summary>
 		///    Stores the contents of a <see cref="string" /> in a
 		///    specified item.
@@ -370,13 +370,13 @@ namespace TagLib.Ape {
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
+
 			if (string.IsNullOrEmpty (value))
 				RemoveItem (key);
 			else
 				SetValue (key, new string [] {value});
 		}
-		
+
 		/// <summary>
 		///    Adds the contents of a <see cref="string[]" /> to the
 		///    value stored in a specified item.
@@ -399,27 +399,27 @@ namespace TagLib.Ape {
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
+
 			if (value == null || value.Length == 0)
 				return;
-			
+
 			int index = GetItemIndex (key);
-			
+
 			List<string> values = new List<string> ();
-			
+
 			if (index >= 0)
 				values.AddRange (items [index].ToStringArray ());
-			
+
 			values.AddRange (value);
-			
+
 			Item item = new Item (key, values.ToArray ());
-			
+
 			if (index >= 0)
 				items [index] = item;
 			else
 				items.Add (item);
 		}
-		
+
 		/// <summary>
 		///    Stores the contents of a <see cref="string[]" /> in a
 		///    specified item.
@@ -442,22 +442,22 @@ namespace TagLib.Ape {
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
+
 			if (value == null || value.Length == 0) {
 				RemoveItem (key);
 				return;
 			}
-			
+
 			Item item = new Item (key, value);
-			
+
 			int index = GetItemIndex (key);
 			if (index >= 0)
 				items [index] = item;
 			else
 				items.Add (item);
-			
+
 		}
-		
+
 		/// <summary>
 		///    Gets a specified item from the current instance.
 		/// </summary>
@@ -474,17 +474,21 @@ namespace TagLib.Ape {
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
-			StringComparison comparison =
+#if !netstandard1_4
+            StringComparison comparison =
 				StringComparison.InvariantCultureIgnoreCase;
-			
-			foreach (Item item in items)
+#else
+            StringComparison comparison =
+                StringComparison.OrdinalIgnoreCase;
+#endif
+
+            foreach (Item item in items)
 				if (key.Equals (item.Key, comparison))
 					return item;
-			
+
 			return null;
 		}
-		
+
 		/// <summary>
 		///    Adds an item to the current instance, replacing the
 		///    existing one of the same name.
@@ -497,14 +501,14 @@ namespace TagLib.Ape {
 		{
 			if (item == null)
 				throw new ArgumentNullException ("item");
-			
+
 			int index = GetItemIndex (item.Key);
 			if (index >= 0)
 				items [index] = item;
 			else
 				items.Add (item);
 		}
-		
+
 		/// <summary>
 		///    Removes the item with a specified key from the current
 		///    instance.
@@ -517,15 +521,20 @@ namespace TagLib.Ape {
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
-			StringComparison comparison =
+
+#if !netstandard1_4
+            StringComparison comparison =
 				StringComparison.InvariantCultureIgnoreCase;
-			
-			for (int i = items.Count - 1; i >= 0; i --)
+#else
+            StringComparison comparison =
+                StringComparison.OrdinalIgnoreCase;
+#endif
+
+            for (int i = items.Count - 1; i >= 0; i --)
 				if (key.Equals (items [i].Key, comparison))
 					items.RemoveAt (i);
 		}
-		
+
 		/// <summary>
 		/// Checks if an item exists.
 		/// </summary>
@@ -544,10 +553,10 @@ namespace TagLib.Ape {
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			
+
 			return GetItemIndex(key) >= 0;
 		}
-		
+
 		/// <summary>
 		///    Renders the current instance as a raw APEv2 tag.
 		/// </summary>
@@ -559,27 +568,27 @@ namespace TagLib.Ape {
 		{
 			ByteVector data = new ByteVector ();
 			uint item_count = 0;
-			
+
 			foreach (Item item in items) {
 				data.Add (item.Render ());
 				item_count ++;
 			}
-			
+
 			footer.ItemCount = item_count;
 			footer.TagSize = (uint) (data.Count + Footer.Size);
 			HeaderPresent = true;
-			
+
 			data.Insert (0, footer.RenderHeader ());
 			data.Add (footer.RenderFooter ());
 			return data;
 		}
-		
-		#endregion
-		
-		
-		
-		#region Protected Methods
-		
+
+#endregion
+
+
+
+#region Protected Methods
+
 		/// <summary>
 		///    Populates the current instance be reading in a tag from
 		///    a specified position in a specified file.
@@ -602,29 +611,29 @@ namespace TagLib.Ape {
 		{
 			if (file == null)
 				throw new ArgumentNullException ("file");
-			
+
 			file.Mode = File.AccessMode.Read;
-			
+
 			if (position < 0 || position > file.Length - Footer.Size)
 				throw new ArgumentOutOfRangeException (
 					"position");
-			
+
 			file.Seek (position);
 			footer = new Footer (file.ReadBlock ((int)Footer.Size));
-			
+
 			if (footer.TagSize == 0)
 				throw new CorruptFileException (
 					"Tag size out of bounds.");
-			
+
 			// If we've read a header, we don't have to seek to read
 			// the content. If we've read a footer, we need to move
 			// back to the start of the tag.
 			if ((footer.Flags & FooterFlags.IsHeader) == 0)
 				file.Seek (position + Footer.Size - footer.TagSize);
-			
+
 			Parse (file.ReadBlock ((int)(footer.TagSize - Footer.Size)));
 		}
-		
+
 		/// <summary>
 		///    Populates the current instance by parsing the contents of
 		///    a raw APEv2 tag, minus the header and footer.
@@ -642,9 +651,9 @@ namespace TagLib.Ape {
 		{
 			if (data == null)
 				throw new ArgumentNullException ("data");
-			
+
 			int pos = 0;
-			
+
 			try {
 				// 11 bytes is the minimum size for an APE item
 				for (uint i = 0; i < footer.ItemCount &&
@@ -658,13 +667,13 @@ namespace TagLib.Ape {
 				// the tag finished with what has been read.
 			}
 		}
-		
-		#endregion
-		
-		
-		
-		#region Private Methods
-		
+
+#endregion
+
+
+
+#region Private Methods
+
 		/// <summary>
 		///    Gets the index of an item in the current instance.
 		/// </summary>
@@ -682,16 +691,21 @@ namespace TagLib.Ape {
 		/// </remarks>
 		private int GetItemIndex (string key)
 		{
-			StringComparison comparison =
+#if !netstandard1_4
+            StringComparison comparison =
 				StringComparison.InvariantCultureIgnoreCase;
-			
-			for (int i = 0; i < items.Count; i ++)
+#else
+            StringComparison comparison =
+                StringComparison.OrdinalIgnoreCase;
+#endif
+
+            for (int i = 0; i < items.Count; i ++)
 				if (key.Equals (items [i].Key, comparison))
 					return i;
-			
+
 			return -1;
 		}
-		
+
 		/// <summary>
 		///    Gets the text value from a specified item.
 		/// </summary>
@@ -709,7 +723,7 @@ namespace TagLib.Ape {
 				Item item = GetItem (key);
 				return item != null ? item.ToString () : null;
 		}
-		
+
 		/// <summary>
 		///    Gets the text values from a specified item.
 		/// </summary>
@@ -728,7 +742,7 @@ namespace TagLib.Ape {
 			return item != null ?
 				item.ToStringArray () : new string [0];
 		}
-		
+
 		/// <summary>
 		///    Gets an integer value from a "/" delimited list in a
 		///    specified item.
@@ -748,29 +762,29 @@ namespace TagLib.Ape {
 		private uint GetItemAsUInt32 (string key, int index)
 		{
 			string text = GetItemAsString (key);
-			
+
 			if (text == null)
 				return 0;
-			
+
 			string [] values = text.Split (new char [] {'/'},
 				index + 2);
-			
+
 			if (values.Length < index + 1)
 				return 0;
-			
+
 			uint result;
 			if (uint.TryParse (values [index], out result))
 				return result;
-			
+
 			return 0;
 		}
-		
-		#endregion
-		
-		
-		
-		#region IEnumerable
-		
+
+#endregion
+
+
+
+#region IEnumerable
+
 		/// <summary>
 		///    Gets the enumerator for the current instance.
 		/// </summary>
@@ -783,7 +797,7 @@ namespace TagLib.Ape {
 			foreach (Item item in items)
 				yield return item.Key;
 		}
-		
+
 		/// <summary>
 		///    Gets the enumerator for the current instance.
 		/// </summary>
@@ -795,13 +809,13 @@ namespace TagLib.Ape {
 		{
 			return GetEnumerator ();
 		}
-		
-		#endregion
-		
-		
-		
-		#region TagLib.Tag
-		
+
+#endregion
+
+
+
+#region TagLib.Tag
+
 		/// <summary>
 		///    Gets the tag types contained in the current instance.
 		/// </summary>
@@ -811,7 +825,7 @@ namespace TagLib.Ape {
 		public override TagTypes TagTypes {
 			get {return TagTypes.Ape;}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the title for the media described by the
 		///    current instance.
@@ -836,7 +850,7 @@ namespace TagLib.Ape {
 		/// <value>
 		///    A <see cref="string" /> containing the sort names for
 		///    the Title of the media described by the current instance,
-		///    or null if no value is present. 
+		///    or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TitleSort" item.
@@ -872,7 +886,7 @@ namespace TagLib.Ape {
 		///    A <see cref="string" /> array containing the sort names for
 		///    the performers or artists who performed in the media
 		///    described by the current instance, or an empty array if
-		///    no value is present. 
+		///    no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "ArtistSort" field.
@@ -994,7 +1008,7 @@ namespace TagLib.Ape {
 		///    the media described by the current instance.
 		/// </summary>
 		/// <value>
-		///    A <see cref="string" /> containing the sort name of 
+		///    A <see cref="string" /> containing the sort name of
 		///    the Album Title of the media described by the current
 		///    instance or null if no value is present.
 		/// </value>
@@ -1024,7 +1038,7 @@ namespace TagLib.Ape {
 			get {return GetItemAsString ("Comment");}
 			set {SetValue ("Comment", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the genres of the media represented by the
 		///    current instance.
@@ -1041,7 +1055,7 @@ namespace TagLib.Ape {
 			get {return GetItemAsStrings ("Genre");}
 			set {SetValue ("Genre", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the year that the media represented by the
 		///    current instance was recorded.
@@ -1057,22 +1071,22 @@ namespace TagLib.Ape {
 		public override uint Year {
 			get {
 				string text = GetItemAsString ("Year");
-				
+
 				if (text == null || text.Length == 0)
 					return 0;
-				
+
 				uint value;
 				if (uint.TryParse (text, out value) ||
 					(text.Length >= 4 && uint.TryParse (
 						text.Substring (0, 4),
 						out value)))
 					return value;
-				
+
 				return 0;
 			}
 			set {SetValue ("Year", value, 0);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the position of the media represented by
 		///    the current instance in its containing album.
@@ -1089,7 +1103,7 @@ namespace TagLib.Ape {
 			get {return GetItemAsUInt32 ("Track", 0);}
 			set {SetValue ("Track", value, TrackCount);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of tracks in the album
 		///    containing the media represented by the current instance.
@@ -1106,7 +1120,7 @@ namespace TagLib.Ape {
 			get {return GetItemAsUInt32 ("Track", 1);}
 			set {SetValue ("Track", Track, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of the disc containing the media
 		///    represented by the current instance in the boxed set.
@@ -1123,7 +1137,7 @@ namespace TagLib.Ape {
 			get {return GetItemAsUInt32 ("Disc", 0);}
 			set {SetValue ("Disc", value, DiscCount);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of discs in the boxed set
 		///    containing the media represented by the current instance.
@@ -1140,7 +1154,7 @@ namespace TagLib.Ape {
 			get {return GetItemAsUInt32 ("Disc", 1);}
 			set {SetValue ("Disc", Disc, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the lyrics or script of the media
 		///    represented by the current instance.
@@ -1157,7 +1171,7 @@ namespace TagLib.Ape {
 			get {return GetItemAsString ("Lyrics");}
 			set {SetValue ("Lyrics", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the grouping on the album which the media
 		///    in the current instance belongs to.
@@ -1174,7 +1188,7 @@ namespace TagLib.Ape {
 			get {return GetItemAsString ("Grouping");}
 			set {SetValue ("Grouping", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of beats per minute in the audio
 		///    of the media represented by the current instance.
@@ -1190,20 +1204,20 @@ namespace TagLib.Ape {
 		public override uint BeatsPerMinute {
 			get {
 				string text = GetItemAsString ("BPM");
-				
+
 				if (text == null)
 					return 0;
-				
+
 				double value;
-				
+
 				if (double.TryParse (text, out value))
 					return (uint) Math.Round (value);
-				
+
 				return 0;
 			}
 			set {SetValue ("BPM", value, 0);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the conductor or director of the media
 		///    represented by the current instance.
@@ -1220,7 +1234,7 @@ namespace TagLib.Ape {
 			get {return GetItemAsString ("Conductor");}
 			set {SetValue ("Conductor", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the copyright information for the media
 		///    represented by the current instance.
@@ -1434,55 +1448,55 @@ namespace TagLib.Ape {
 		public override IPicture [] Pictures {
 			get {
 				List<IPicture> pictures = new List<IPicture> ();
-				
+
 				for (int i = 0; i < picture_item_names.Length;
 					i++) {
 					Item item = GetItem (
 						picture_item_names [i]);
-					
+
 					if (item == null ||
 						item.Type != ItemType.Binary)
 						continue;
-					
+
 					int index = item.Value.Find (
 						ByteVector.TextDelimiter (
 							StringType.UTF8));
-					
+
 					if (index < 0)
 						continue;
-					
+
 					Picture pic = new Picture (
 						item.Value.Mid (index + 1));
-					
+
 					pic.Description = item.Value
 						.ToString (StringType.UTF8, 0,
 							index);
-					
+
 					pic.Type = (PictureType) i;
-					
+
 					pictures.Add (pic);
 				}
-				
+
 				return pictures.ToArray ();
 			}
 			set {
 				foreach (string item_name in picture_item_names)
 					RemoveItem (item_name);
-				
+
 				if (value == null || value.Length == 0)
 					return;
-				
+
 				foreach (IPicture pic in value) {
 					int type = (int) pic.Type;
-					
+
 					if (type >= picture_item_names.Length)
 						type = 0;
-					
+
 					string name = picture_item_names [type];
-					
+
 					if (GetItem (name) != null)
 						continue;
-					
+
 					ByteVector data = ByteVector
 						.FromString (
 							pic.Description,
@@ -1490,12 +1504,12 @@ namespace TagLib.Ape {
 					data.Add (ByteVector.TextDelimiter (
 						StringType.UTF8));
 					data.Add (pic.Data);
-					
+
 					SetItem (new Item (name, data));
 				}
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets whether or not the current instance is empty.
 		/// </summary>
@@ -1506,7 +1520,7 @@ namespace TagLib.Ape {
 		public override bool IsEmpty {
 			get {return items.Count == 0;}
 		}
-		
+
 		/// <summary>
 		///    Clears the values stored in the current instance.
 		/// </summary>
@@ -1514,7 +1528,7 @@ namespace TagLib.Ape {
 		{
 			items.Clear ();
 		}
-		
+
 		/// <summary>
 		///    Copies the values from the current instance to another
 		///    <see cref="TagLib.Tag" />, optionally overwriting
@@ -1541,23 +1555,23 @@ namespace TagLib.Ape {
 		{
 			if (target == null)
 				throw new ArgumentNullException ("target");
-			
+
 			TagLib.Ape.Tag match = target as TagLib.Ape.Tag;
-			
+
 			if (match == null) {
 				base.CopyTo (target, overwrite);
 				return;
 			}
-			
+
 			foreach (Item item in items) {
 				if (!overwrite &&
 					match.GetItem (item.Key) != null)
 					continue;
-				
+
 				match.items.Add (item.Clone ());
 			}
 		}
-		
+
 #endregion
 	}
 }

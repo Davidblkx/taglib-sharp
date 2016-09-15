@@ -40,30 +40,30 @@ namespace TagLib.Ogg
 	public class XiphComment : TagLib.Tag, IEnumerable<string>
 	{
 #region Private Fields
-		
+
 		/// <summary>
 		///    Contains the comment fields.
 		/// </summary>
 		private Dictionary<string,string[]> field_list =
 			new Dictionary<string,string[]> ();
-		
+
 		/// <summary>
 		///    Contains the ventor ID.
 		/// </summary>
 		private string vendor_id;
-		
+
 		/// <summary>
 		///    Contains the field identifier to use for <see
 		///    cref="Comment" />.
 		/// </summary>
 		private string comment_field = "DESCRIPTION";
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Constructors
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="XiphComment" /> with no contents.
@@ -91,13 +91,13 @@ namespace TagLib.Ogg
 
 			Parse (data);
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Public Methods
-		
+
 		/// <summary>
 		///    Gets the field data for a given field identifier.
 		/// </summary>
@@ -116,15 +116,20 @@ namespace TagLib.Ogg
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
-			key = key.ToUpper (CultureInfo.InvariantCulture);
-			
-			if (!field_list.ContainsKey (key))
+
+
+#if !netstandard1_4
+            key = key.ToUpper (CultureInfo.InvariantCulture);
+#else
+            key = key.ToUpper();
+#endif
+
+            if (!field_list.ContainsKey (key))
 				return new string [0];
-			
+
 			return (string []) field_list [key].Clone ();
 		}
-		
+
 		/// <summary>
 		///    Gets the first field for a given field identifier.
 		/// </summary>
@@ -143,11 +148,11 @@ namespace TagLib.Ogg
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
+
 			string [] values = GetField (key);
 			return (values.Length > 0) ? values [0] : null;
 		}
-		
+
 		/// <summary>
 		///    Sets the contents of a specified field to a number.
 		/// </summary>
@@ -165,14 +170,14 @@ namespace TagLib.Ogg
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
+
 			if (number == 0)
 				RemoveField (key);
 			else
 				SetField (key, number.ToString (
 					CultureInfo.InvariantCulture));
 		}
-		
+
 		/// <summary>
 		///    Sets the contents of a specified field to the contents of
 		///    a <see cref="string[]" />.
@@ -192,19 +197,23 @@ namespace TagLib.Ogg
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
-			key = key.ToUpper (CultureInfo.InvariantCulture);
-			
-			if (values == null || values.Length == 0) {
+
+#if !netstandard1_4
+            key = key.ToUpper (CultureInfo.InvariantCulture);
+#else
+            key = key.ToUpper();
+#endif
+
+            if (values == null || values.Length == 0) {
 				RemoveField (key);
 				return;
 			}
-			
+
 			List <string> result = new List<string> ();
 			foreach (string text in values)
 				if (text != null && text.Trim ().Length != 0)
 					result.Add (text);
-			
+
 			if (result.Count == 0)
 				RemoveField (key);
 			else if (field_list.ContainsKey (key))
@@ -212,7 +221,7 @@ namespace TagLib.Ogg
 			else
 				field_list.Add (key, result.ToArray ());
 		}
-		
+
 		/// <summary>
 		///    Removes a field and all its values from the current
 		///    instance.
@@ -228,12 +237,16 @@ namespace TagLib.Ogg
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			
-			key = key.ToUpper (CultureInfo.InvariantCulture);
-			
-			field_list.Remove (key);
+
+#if !netstandard1_4
+            key = key.ToUpper (CultureInfo.InvariantCulture);
+#else
+            key = key.ToUpper();
+#endif
+
+            field_list.Remove (key);
 		}
-		
+
 		/// <summary>
 		///    Renders the current instance as a raw Xiph comment,
 		///    optionally adding a framing bit.
@@ -255,7 +268,7 @@ namespace TagLib.Ogg
 			// rather than the lenght of the the string since this
 			// is UTF8 text and there may be more characters in the
 			// data than in the UTF16 string.
-			
+
 			ByteVector vendor_data = ByteVector.FromString (
 				vendor_id, StringType.UTF8);
 
@@ -278,7 +291,7 @@ namespace TagLib.Ogg
 					field_data.Add ((byte) '=');
 					field_data.Add (ByteVector.FromString (
 						value, StringType.UTF8));
-					
+
 					data.Add (ByteVector.FromUInt ((uint)
 						field_data.Count, false));
 					data.Add (field_data);
@@ -293,11 +306,11 @@ namespace TagLib.Ogg
 		}
 
 #endregion
-		
-		
-		
+
+
+
 #region Public Properties
-		
+
 		/// <summary>
 		///    Gets the number of fields contained in the current
 		///    instance.
@@ -311,11 +324,11 @@ namespace TagLib.Ogg
 				uint count = 0;
 				foreach (string [] values in field_list.Values)
 					count += (uint) values.Length;
-				
+
 				return count;
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets the vendor ID for the current instance.
 		/// </summary>
@@ -326,13 +339,13 @@ namespace TagLib.Ogg
 		public string VendorId {
 			get {return vendor_id;}
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Protected Methods
-		
+
 		/// <summary>
 		///    Populates and initializes a new instance of <see
 		///    cref="XiphComment" /> by reading the contents of a raw
@@ -349,7 +362,7 @@ namespace TagLib.Ogg
 		{
 			if (data == null)
 				throw new ArgumentNullException ("data");
-			
+
 			// The first thing in the comment data is the vendor ID
 			// length, followed by a UTF8 string with the vendor ID.
 			int pos = 0;
@@ -386,14 +399,21 @@ namespace TagLib.Ogg
 				if (comment_separator_position < 0)
 					continue;
 
-				string key = comment.Substring (0,
+#if !netstandard1_4
+                string key = comment.Substring (0,
 					comment_separator_position)
 					.ToUpper (
 						CultureInfo.InvariantCulture);
-				string value = comment.Substring (
+#else
+                string key = comment.Substring(0,
+                    comment_separator_position)
+                    .ToUpper();
+#endif
+
+                string value = comment.Substring (
 					comment_separator_position + 1);
 				string [] values;
-				
+
 				if (field_list.TryGetValue (key, out values)) {
 					Array.Resize <string> (ref values,
 						values.Length + 1);
@@ -404,13 +424,13 @@ namespace TagLib.Ogg
 				}
 			}
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region IEnumerable
-		
+
 		/// <summary>
 		///    Gets an enumerator for enumerating through the the field
 		///    identifiers.
@@ -423,18 +443,18 @@ namespace TagLib.Ogg
 		{
 			return field_list.Keys.GetEnumerator();
 		}
-		
+
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return field_list.Keys.GetEnumerator();
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region TagLib.Tag
-		
+
 		/// <summary>
 		///    Gets the tag types contained in the current instance.
 		/// </summary>
@@ -444,7 +464,7 @@ namespace TagLib.Ogg
 		public override TagTypes TagTypes {
 			get {return TagTypes.Xiph;}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the title for the media described by the
 		///    current instance.
@@ -461,13 +481,13 @@ namespace TagLib.Ogg
 			get {return GetFirstField ("TITLE");}
 			set {SetField ("TITLE", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the sort names for the Track Title of
 		///    the media described by the current instance.
 		/// </summary>
 		/// <value>
-		///    A <see cref="string" /> containing the sort name of 
+		///    A <see cref="string" /> containing the sort name of
 		///    the Track Title of the media described by the current
 		///    instance or null if no value is present.
 		/// </value>
@@ -498,7 +518,7 @@ namespace TagLib.Ogg
 			get {return GetField ("ARTIST");}
 			set {SetField ("ARTIST", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the sort names of the performers or artists
 		///    who performed in the media described by the current instance.
@@ -507,7 +527,7 @@ namespace TagLib.Ogg
 		///    A <see cref="string[]" /> containing the sort names for
 		///    the performers or artists who performed in the media
 		///    described by the current instance, or an empty array if
-		///    no value is present. 
+		///    no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "ARTISTSORT" field.
@@ -517,7 +537,7 @@ namespace TagLib.Ogg
 			get {return GetField ("ARTISTSORT");}
 			set {SetField ("ARTISTSORT", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the band or artist who is credited in the
 		///    creation of the entire album or collection containing the
@@ -535,7 +555,7 @@ namespace TagLib.Ogg
 		/// </remarks>
 		public override string [] AlbumArtists {
 			get {
-				// First try to get AlbumArtist, if that comment is not present try: 
+				// First try to get AlbumArtist, if that comment is not present try:
 				// ENSEMBLE: set by TAG & RENAME
 				// ALBUM ARTIST: set by The GodFather
 				string[] value = GetField("ALBUMARTIST");
@@ -546,11 +566,11 @@ namespace TagLib.Ogg
 				if (value != null && value.Length > 0)
 				  return value;
 
-				return GetField ("ENSEMBLE"); 
+				return GetField ("ENSEMBLE");
 			}
 			set {SetField ("ALBUMARTIST", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the sort names for the band or artist who
 		///    is credited in the creation of the entire album or
@@ -573,7 +593,7 @@ namespace TagLib.Ogg
 			get {return GetField ("ALBUMARTISTSORT");}
 			set {SetField ("ALBUMARTISTSORT", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the composers of the media represented by
 		///    the current instance.
@@ -590,7 +610,7 @@ namespace TagLib.Ogg
 			get {return GetField ("COMPOSER");}
 			set {SetField ("COMPOSER", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the sort names for the composers of
 		///    the media described by the current instance.
@@ -626,13 +646,13 @@ namespace TagLib.Ogg
 			get {return GetFirstField ("ALBUM");}
 			set {SetField ("ALBUM", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the sort names for the Album Title of
 		///    the media described by the current instance.
 		/// </summary>
 		/// <value>
-		///    A <see cref="string" /> containing the sort name of 
+		///    A <see cref="string" /> containing the sort name of
 		///    the Album Title of the media described by the current
 		///    instance or null if no value is present.
 		/// </value>
@@ -665,13 +685,13 @@ namespace TagLib.Ogg
 				string value = GetFirstField (comment_field);
 				if (value != null || comment_field == "COMMENT")
 					return value;
-				
+
 				comment_field = "COMMENT";
 				return GetFirstField (comment_field);
 			}
 			set {SetField (comment_field, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the genres of the media represented by the
 		///    current instance.
@@ -688,7 +708,7 @@ namespace TagLib.Ogg
 			get {return GetField ("GENRE");}
 			set {SetField ("GENRE", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the year that the media represented by the
 		///    current instance was recorded.
@@ -713,7 +733,7 @@ namespace TagLib.Ogg
 			}
 			set {SetField ("DATE", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the position of the media represented by
 		///    the current instance in its containing album.
@@ -732,12 +752,12 @@ namespace TagLib.Ogg
 				string text = GetFirstField ("TRACKNUMBER");
 				string [] values;
 				uint value;
-				
+
 				if (text != null && (values = text.Split ('/'))
 					.Length > 0 && uint.TryParse (
 						values [0], out value))
 					return value;
-				
+
 				return 0;
 			}
 			set {
@@ -745,7 +765,7 @@ namespace TagLib.Ogg
 				SetField ("TRACKNUMBER", value);
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of tracks in the album
 		///    containing the media represented by the current instance.
@@ -765,22 +785,22 @@ namespace TagLib.Ogg
 				string text;
 				string [] values;
 				uint value;
-				
+
 				if ((text = GetFirstField ("TRACKTOTAL")) !=
 					null && uint.TryParse (text, out value))
 					return value;
-				
+
 				if ((text = GetFirstField ("TRACKNUMBER")) !=
 					null && (values = text.Split ('/'))
 					.Length > 1 && uint.TryParse (
 						values [1], out value))
 					return value;
-				
+
 				return 0;
 			}
 			set {SetField ("TRACKTOTAL", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of the disc containing the media
 		///    represented by the current instance in the boxed set.
@@ -799,12 +819,12 @@ namespace TagLib.Ogg
 				string text = GetFirstField ("DISCNUMBER");
 				string [] values;
 				uint value;
-				
+
 				if (text != null && (values = text.Split ('/'))
 					.Length > 0 && uint.TryParse (
 						values [0], out value))
 					return value;
-				
+
 				return 0;
 			}
 			set {
@@ -812,7 +832,7 @@ namespace TagLib.Ogg
 				SetField ("DISCNUMBER", value);
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of discs in the boxed set
 		///    containing the media represented by the current instance.
@@ -836,18 +856,18 @@ namespace TagLib.Ogg
 				if ((text = GetFirstField ("DISCTOTAL")) != null
 					&& uint.TryParse (text, out value))
 					return value;
-				
+
 				if ((text = GetFirstField ("DISCNUMBER")) !=
 					null && (values = text.Split ('/'))
 					.Length > 1 && uint.TryParse (
 						values [1], out value))
 					return value;
-				
+
 				return 0;
 			}
 			set {SetField ("DISCTOTAL", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the lyrics or script of the media
 		///    represented by the current instance.
@@ -864,7 +884,7 @@ namespace TagLib.Ogg
 			get {return GetFirstField ("LYRICS");}
 			set {SetField ("LYRICS", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the grouping on the album which the media
 		///    in the current instance belongs to.
@@ -881,7 +901,7 @@ namespace TagLib.Ogg
 			get {return GetFirstField ("GROUPING");}
 			set {SetField ("GROUPING", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of beats per minute in the audio
 		///    of the media represented by the current instance.
@@ -905,7 +925,7 @@ namespace TagLib.Ogg
 			}
 			set {SetField ("TEMPO", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the conductor or director of the media
 		///    represented by the current instance.
@@ -922,7 +942,7 @@ namespace TagLib.Ogg
 			get {return GetFirstField ("CONDUCTOR");}
 			set {SetField ("CONDUCTOR", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the copyright information for the media
 		///    represented by the current instance.
@@ -939,7 +959,7 @@ namespace TagLib.Ogg
 			get {return GetFirstField ("COPYRIGHT");}
 			set {SetField ("COPYRIGHT", value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the MusicBrainz Artist ID for the media
 		///    represented by the current instance.
@@ -1182,7 +1202,7 @@ namespace TagLib.Ogg
 		///    per the ReplayGain specification.
 		/// </value>
 		/// <remarks>
-		///    This property is implemented using the 
+		///    This property is implemented using the
 		///    "REPLAYGAIN_TRACK_GAIN" field. Set the value to double.NaN
 		///    to clear the field.
 		/// </remarks>
@@ -1190,15 +1210,22 @@ namespace TagLib.Ogg
 			get {
 				string text = GetFirstField ("REPLAYGAIN_TRACK_GAIN");
 				double value;
-				
+
 				if (text == null) {
 					return double.NaN;
 				}
+#if !netstandard1_4
 				if (text.ToLower(CultureInfo.InvariantCulture).EndsWith("db")) {
 					text = text.Substring (0, text.Length - 2).Trim();
 				}
-				
-				if (double.TryParse (text, NumberStyles.Float,
+#else
+                if (text.ToLower().EndsWith("db"))
+                {
+                    text = text.Substring(0, text.Length - 2).Trim();
+                }
+#endif
+
+                if (double.TryParse (text, NumberStyles.Float,
 					CultureInfo.InvariantCulture, out value)) {
 					return value;
 				}
@@ -1223,7 +1250,7 @@ namespace TagLib.Ogg
 		///    ReplayGain specification.
 		/// </value>
 		/// <remarks>
-		///    This property is implemented using the 
+		///    This property is implemented using the
 		///    "REPLAYGAIN_TRACK_PEAK" field. Set the value to double.NaN
 		///    to clear the field.
 		/// </remarks>
@@ -1257,7 +1284,7 @@ namespace TagLib.Ogg
 		///    per the ReplayGain specification.
 		/// </value>
 		/// <remarks>
-		///    This property is implemented using the 
+		///    This property is implemented using the
 		///    "REPLAYGAIN_ALBUM_GAIN" field. Set the value to double.NaN
 		///    to clear the field.
 		/// </remarks>
@@ -1269,11 +1296,18 @@ namespace TagLib.Ogg
 				if (text == null) {
 					return double.NaN;
 				}
+#if !netstandard1_4
 				if (text.ToLower(CultureInfo.InvariantCulture).EndsWith("db")) {
 					text = text.Substring (0, text.Length - 2).Trim();
 				}
-				
-				if (double.TryParse (text, NumberStyles.Float,
+#else
+                if (text.ToLower().EndsWith("db"))
+                {
+                    text = text.Substring(0, text.Length - 2).Trim();
+                }
+#endif
+
+                if (double.TryParse (text, NumberStyles.Float,
 					CultureInfo.InvariantCulture, out value)) {
 					return value;
 				}
@@ -1298,7 +1332,7 @@ namespace TagLib.Ogg
 		///    ReplayGain specification.
 		/// </value>
 		/// <remarks>
-		///    This property is implemented using the 
+		///    This property is implemented using the
 		///    "REPLAYGAIN_ALBUM_PEAK" field. Set the value to double.NaN
 		///    to clear the field.
 		/// </remarks>
@@ -1336,11 +1370,11 @@ namespace TagLib.Ogg
 				foreach (string [] values in field_list.Values)
 					if (values.Length != 0)
 						return false;
-				
+
 				return true;
 			}
 		}
-		
+
 		/// <summary>
 		///    Clears the values stored in the current instance.
 		/// </summary>
@@ -1348,7 +1382,7 @@ namespace TagLib.Ogg
 		{
 			field_list.Clear ();
 		}
-		
+
 #endregion
 	}
 }

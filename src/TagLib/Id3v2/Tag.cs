@@ -31,7 +31,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Diagnostics.Contracts;
 using System.Text;
+
+#if netstandard1_4
+using TagLib.Core;
+#endif
 
 namespace TagLib.Id3v2 {
 	/// <summary>
@@ -41,78 +50,84 @@ namespace TagLib.Id3v2 {
 	/// </summary>
 	public class Tag : TagLib.Tag, IEnumerable<Frame>, ICloneable
 	{
-#region Private Static Fields
-		
-		/// <summary>
-		///    Contains the language to use for language specific
-		///    fields.
-		/// </summary>
-		private static string language = 
+        #region Private Static Fields
+
+        /// <summary>
+        ///    Contains the language to use for language specific
+        ///    fields.
+        /// </summary>
+#if !netstandard1_4
+		private static string language =
 			CultureInfo.CurrentCulture.ThreeLetterISOLanguageName;
-		
-		/// <summary>
-		///    Contains the field to use for new tags.
-		/// </summary>
-		private static byte default_version = 3;
-		
+#else
+        private static string language =
+            CultureInfo.CurrentCulture.ThreeLetterISOLanguageName();
+#endif
+
+        /// <summary>
+        ///    Contains the field to use for new tags.
+        /// </summary>
+        private static byte default_version = 3;
+
 		/// <summary>
 		///    Indicates whether or not all tags should be saved in
 		///    <see cref="default_version" />.
 		/// </summary>
 		private static bool force_default_version = false;
-		
+
 		/// <summary>
 		///    Specifies the default string type to use for new frames.
 		/// </summary>
 		private static StringType default_string_type = StringType.UTF8;
-		
+
 		/// <summary>
 		///    Specifies whether or not all frames shoudl be saved in
 		///    <see cref="default_string_type" />.
 		/// </summary>
 		private static bool force_default_string_type = false;
-		
+
 		/// <summary>
 		///    Specifies whether or not numeric genres should be used
 		///    when available.
 		/// </summary>
 		private static bool use_numeric_genres = true;
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Private Fields
-		
+
 		/// <summary>
 		///    Contains the tag's header.
 		/// </summary>
 		private Header header = new Header ();
-		
+
 		/// <summary>
 		///    Contains the tag's extended header.
 		/// </summary>
 		private ExtendedHeader extended_header = null;
-		
+
 		/// <summary>
 		///    Contains the tag's frames.
 		/// </summary>
 		private List<Frame> frame_list = new List<Frame> ();
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Constructors
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="Tag" /> with no contents.
 		/// </summary>
 		public Tag ()
 		{
+
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="Tag" /> by reading the contents from a specified
@@ -137,17 +152,17 @@ namespace TagLib.Id3v2 {
 		{
 			if (file == null)
 				throw new ArgumentNullException ("file");
-			
+
 			file.Mode = TagLib.File.AccessMode.Read;
-			
+
 			if (position < 0 ||
 				position > file.Length - Header.Size)
 				throw new ArgumentOutOfRangeException (
 					"position");
-			
+
 			Read (file, position);
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="Tag" /> by reading the contents from a specified
@@ -166,33 +181,33 @@ namespace TagLib.Id3v2 {
 		{
 			if (data == null)
 				throw new ArgumentNullException ("data");
-			
+
 			if (data.Count < Header.Size)
 				throw new CorruptFileException (
 					"Does not contain enough header data.");
-			
+
 			header = new Header (data);
-			
+
 			// If the tag size is 0, then this is an invalid tag.
 			// Tags must contain at least one frame.
-			
+
 			if(header.TagSize == 0)
 				return;
-			
+
 			if (data.Count - Header.Size < header.TagSize)
 				throw new CorruptFileException (
 					"Does not contain enough tag data.");
-			
+
 			Parse (data.Mid ((int) Header.Size,
 				(int) header.TagSize));
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Public Methods
-		
+
 		/// <summary>
 		///    Gets the text value from a specified Text Information
 		///    Frame.
@@ -211,11 +226,11 @@ namespace TagLib.Id3v2 {
 		{
 			TextInformationFrame frame = TextInformationFrame.Get (
 				this, ident, false);
-			
+
 			string result = frame == null ? null : frame.ToString ();
 			return string.IsNullOrEmpty (result) ? null : result;
 		}
-		
+
 		/// <summary>
 		///    Gets all frames contained in the current instance.
 		/// </summary>
@@ -227,7 +242,7 @@ namespace TagLib.Id3v2 {
 		{
 			return frame_list;
 		}
-		
+
 		/// <summary>
 		///    Gets all frames with a specified identifier contained in
 		///    the current instance.
@@ -250,17 +265,17 @@ namespace TagLib.Id3v2 {
 		{
 			if (ident == null)
 				throw new ArgumentNullException ("ident");
-			
+
 			if (ident.Count != 4)
 				throw new ArgumentException (
 					"Identifier must be four bytes long.",
 					"ident");
-			
+
 			foreach (Frame f in frame_list)
 				if (f.FrameId.Equals (ident))
 					yield return f;
 		}
-		
+
 		/// <summary>
 		///    Gets all frames with of a specified type contained in
 		///    the current instance.
@@ -281,7 +296,7 @@ namespace TagLib.Id3v2 {
 					yield return tf;
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets all frames with a of type <typeparamref name="T" />
 		///    with a specified identifier contained in the current
@@ -310,19 +325,19 @@ namespace TagLib.Id3v2 {
 		{
 			if (ident == null)
 				throw new ArgumentNullException ("ident");
-			
+
 			if (ident.Count != 4)
 				throw new ArgumentException (
 					"Identifier must be four bytes long.",
 					"ident");
-			
+
 			foreach (Frame f in frame_list) {
 				T tf = f as T;
 				if (tf != null && f.FrameId.Equals (ident))
 					yield return tf;
 			}
 		}
-		
+
 		/// <summary>
 		///    Adds a frame to the current instance.
 		/// </summary>
@@ -337,10 +352,10 @@ namespace TagLib.Id3v2 {
 		{
 			if (frame == null)
 				throw new ArgumentNullException ("frame");
-			
+
 			frame_list.Add (frame);
 		}
-		
+
 		/// <summary>
 		///    Replaces an existing frame with a new one in the list
 		///    contained in the current instance, or adds a new one if
@@ -361,20 +376,20 @@ namespace TagLib.Id3v2 {
 		{
 			if (oldFrame == null)
 				throw new ArgumentNullException ("oldFrame");
-			
+
 			if (newFrame == null)
 				throw new ArgumentNullException ("newFrame");
-			
+
 			if (oldFrame == newFrame)
 				return;
-			
+
 			int i = frame_list.IndexOf (oldFrame);
 			if (i >= 0)
 				frame_list [i] = newFrame;
 			else
 				frame_list.Add (newFrame);
 		}
-		
+
 		/// <summary>
 		///    Removes a specified frame from the current instance.
 		/// </summary>
@@ -389,11 +404,11 @@ namespace TagLib.Id3v2 {
 		{
 			if (frame == null)
 				throw new ArgumentNullException ("frame");
-			
+
 			if (frame_list.Contains (frame))
 				frame_list.Remove (frame);
 		}
-		
+
 		/// <summary>
 		///    Removes all frames with a specified identifier from the
 		///    current instance.
@@ -412,17 +427,17 @@ namespace TagLib.Id3v2 {
 		{
 			if (ident == null)
 				throw new ArgumentNullException ("ident");
-			
+
 			if (ident.Count != 4)
 				throw new ArgumentException (
 					"Identifier must be four bytes long.",
 					"ident");
-			
+
 			for (int i = frame_list.Count - 1; i >= 0; i --)
 				if (frame_list [i].FrameId.Equals (ident))
 					frame_list.RemoveAt (i);
 		}
-		
+
 		/// <summary>
 		///    Sets the text for a specified Text Information Frame.
 		/// </summary>
@@ -446,31 +461,31 @@ namespace TagLib.Id3v2 {
 		{
 			if (ident == null)
 				throw new ArgumentNullException ("ident");
-			
+
 			if (ident.Count != 4)
 				throw new ArgumentException (
 					"Identifier must be four bytes long.",
 					"ident");
-			
+
 			bool empty = true;
-			
+
 			if (text != null)
 				for (int i = 0; empty && i < text.Length; i ++)
 					if (!string.IsNullOrEmpty (text [i]))
 						empty = false;
-			
+
 			if (empty) {
 				RemoveFrames (ident);
 				return;
 			}
-			
+
 			TextInformationFrame frame =
 				TextInformationFrame.Get (this, ident, true);
-			
+
 			frame.Text = text;
 			frame.TextEncoding = DefaultEncoding;
 		}
-		
+
 		/// <summary>
 		///    Sets the text for a specified Text Information Frame.
 		/// </summary>
@@ -498,7 +513,7 @@ namespace TagLib.Id3v2 {
 			else
 				SetTextFrame (ident, text.ToArray ());
 		}
-		
+
 		/// <summary>
 		///    Sets the numeric values for a specified Text Information
 		///    Frame.
@@ -535,12 +550,12 @@ namespace TagLib.Id3v2 {
 		{
 			if (ident == null)
 				throw new ArgumentNullException ("ident");
-			
+
 			if (ident.Count != 4)
 				throw new ArgumentException (
 					"Identifier must be four bytes long.",
 					"ident");
-			
+
 			if (number == 0 && count == 0) {
 				RemoveFrames (ident);
 			} else if (count != 0) {
@@ -552,7 +567,7 @@ namespace TagLib.Id3v2 {
 					CultureInfo.InvariantCulture));
 			}
 		}
-		
+
 		/// <summary>
 		///    Renders the current instance as a raw ID3v2 tag.
 		/// </summary>
@@ -577,19 +592,19 @@ namespace TagLib.Id3v2 {
 			// Header.TagSize) includes the extended header, frames
 			// and padding, but does not include the tag's header or
 			// footer.
-			
+
 			bool has_footer = (header.Flags &
 				HeaderFlags.FooterPresent) != 0;
 			bool unsynchAtFrameLevel = (header.Flags & HeaderFlags.Unsynchronisation) != 0 && Version >= 4;
 			bool unsynchAtTagLevel = (header.Flags & HeaderFlags.Unsynchronisation) != 0 && Version < 4;
 
 			header.MajorVersion = has_footer ? (byte) 4 : Version;
-			
+
 			ByteVector tag_data = new ByteVector ();
-			
+
 			// TODO: Render the extended header.
 			header.Flags &= ~HeaderFlags.ExtendedHeader;
-			
+
 			// Loop through the frames rendering them and adding
 			// them to the tag_data.
 			foreach (Frame frame in frame_list) {
@@ -599,44 +614,44 @@ namespace TagLib.Id3v2 {
 				if ((frame.Flags &
 					FrameFlags.TagAlterPreservation) != 0)
 					continue;
-				
+
 				try {
 					tag_data.Add (frame.Render (
 						header.MajorVersion));
 				} catch (NotImplementedException) {
 				}
 			}
-			
+
 			// Add unsyncronization bytes if necessary.
 			if (unsynchAtTagLevel)
 				SynchData.UnsynchByteVector (tag_data);
-			
+
 			// Compute the amount of padding, and append that to
 			// tag_data.
-			
-			
+
+
 			if (!has_footer)
 				tag_data.Add (new ByteVector ((int)
-					((tag_data.Count < header.TagSize) ? 
+					((tag_data.Count < header.TagSize) ?
 					(header.TagSize - tag_data.Count) :
 					1024)));
-			
+
 			// Set the tag size.
 			header.TagSize = (uint) tag_data.Count;
-			
+
 			tag_data.Insert (0, header.Render ());
 			if (has_footer)
 				tag_data.Add (new Footer (header).Render ());
-			
+
 			return tag_data;
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Public Properties
-		
+
 		/// <summary>
 		///    Gets and sets the header flags applied to the current
 		///    instance.
@@ -649,7 +664,7 @@ namespace TagLib.Id3v2 {
 			get {return header.Flags;}
 			set {header.Flags = value;}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the ID3v2 version of the current instance.
 		/// </summary>
@@ -670,17 +685,17 @@ namespace TagLib.Id3v2 {
 					throw new ArgumentOutOfRangeException (
 						"value",
 						"Version must be 2, 3, or 4");
-				
+
 				header.MajorVersion = value;
 			}
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Public Static Properties
-		
+
 		/// <summary>
 		///    Gets and sets the ISO-639-2 language code to use when
 		///    searching for and storing language specific values.
@@ -701,7 +716,7 @@ namespace TagLib.Id3v2 {
 					"   " : value.Substring (0,3);
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the the default version to use when
 		///    creating new tags.
@@ -725,11 +740,11 @@ namespace TagLib.Id3v2 {
 					throw new ArgumentOutOfRangeException (
 						"value",
 						"Version must be 2, 3, or 4");
-				
+
 				default_version = value;
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets whether or not to save all tags in the
 		///    default version rather than their original version.
@@ -744,7 +759,7 @@ namespace TagLib.Id3v2 {
 			get {return force_default_version;}
 			set {force_default_version = value;}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the encoding to use when creating new
 		///    frames.
@@ -757,7 +772,7 @@ namespace TagLib.Id3v2 {
 			get {return default_string_type;}
 			set {default_string_type = value;}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets whether or not to render all frames with
 		///    the default encoding rather than their original encoding.
@@ -771,7 +786,7 @@ namespace TagLib.Id3v2 {
 			get {return force_default_string_type;}
 			set {force_default_string_type = value;}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets whether or not to use ID3v1 style numeric
 		///    genres when possible.
@@ -790,13 +805,13 @@ namespace TagLib.Id3v2 {
 			get {return use_numeric_genres;}
 			set {use_numeric_genres = value;}
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Protected Methods
-		
+
 		/// <summary>
 		///    Populates the current instance be reading in a tag from
 		///    a specified position in a specified file.
@@ -819,26 +834,26 @@ namespace TagLib.Id3v2 {
 		{
 			if (file == null)
 				throw new ArgumentNullException ("file");
-			
+
 			file.Mode = File.AccessMode.Read;
-			
+
 			if (position < 0 || position > file.Length - Header.Size)
 				throw new ArgumentOutOfRangeException (
 					"position");
-			
+
 			file.Seek (position);
-			
+
 			header = new Header (file.ReadBlock ((int) Header.Size));
-			
+
 			// If the tag size is 0, then this is an invalid tag.
 			// Tags must contain at least one frame.
-			
+
 			if(header.TagSize == 0)
 				return;
-			
+
 			Parse (file.ReadBlock ((int) header.TagSize));
 		}
-		
+
 		/// <summary>
 		///    Populates the current instance by parsing the contents of
 		///    a raw ID3v2 tag, minus the header.
@@ -862,16 +877,16 @@ namespace TagLib.Id3v2 {
 			bool fullTagUnsynch =  (header.MajorVersion < 4) && ((header.Flags & HeaderFlags.Unsynchronisation) != 0);
 			if (fullTagUnsynch)
 				SynchData.ResynchByteVector (data);
-			
+
 			int frame_data_position = 0;
 			int frame_data_length = data.Count;
-			
+
 			// Check for the extended header.
-			
+
 			if ((header.Flags & HeaderFlags.ExtendedHeader) != 0) {
 				extended_header = new ExtendedHeader (data,
 					header.MajorVersion);
-				
+
 				if (extended_header.Size <= data.Count) {
 					frame_data_position += (int)
 						extended_header.Size;
@@ -879,7 +894,7 @@ namespace TagLib.Id3v2 {
 						extended_header.Size;
 				}
 			}
-			
+
 			// Parse the frames. TDRC, TDAT, and TIME will be needed
 			// for post-processing, so check for them as they are
 			// loaded.
@@ -887,10 +902,10 @@ namespace TagLib.Id3v2 {
 			TextInformationFrame tyer = null;
 			TextInformationFrame tdat = null;
 			TextInformationFrame time = null;
-			
+
 			while (frame_data_position < frame_data_length -
 				FrameHeader.Size (header.MajorVersion)) {
-				
+
 				// If the next data is position is 0, assume
 				// that we've hit the padding portion of the
 				// frame data.
@@ -917,17 +932,17 @@ namespace TagLib.Id3v2 {
 				// Only add frames that contain data.
 				if (frame.Size == 0)
 					continue;
-				
+
 				AddFrame (frame);
-				
+
 				// If the tag is version 4, no post-processing
 				// is needed.
 				if (header.MajorVersion == 4)
 					continue;
-					
+
 				// Load up the first instance of each, for
 				// post-processing.
-				
+
 				if (tdrc == null &&
 					frame.FrameId.Equals (FrameType.TDRC)) {
 					tdrc = frame as TextInformationFrame;
@@ -967,7 +982,7 @@ namespace TagLib.Id3v2 {
 					// Add the time
 					if (time != null) {
 						string time_text = time.ToString ();
-							
+
 						if (time_text.Length == 4)
 							tdrc_text.Append ("T").Append (time_text, 0, 2)
 								.Append (":").Append (time_text, 2, 2);
@@ -981,13 +996,13 @@ namespace TagLib.Id3v2 {
 
 			tdrc.Text = new string [] { tdrc_text.ToString () };
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Private Methods
-		
+
 		/// <summary>
 		///    Gets the text values from a specified Text Information
 		///    Frame.
@@ -1008,7 +1023,7 @@ namespace TagLib.Id3v2 {
 				this, ident, false);
 			return frame == null ? new string [0] : frame.Text;
 		}
-		
+
 		/// <summary>
 		///    Gets an integer value from a "/" delimited list in a
 		///    specified Text Information Frame.
@@ -1028,20 +1043,20 @@ namespace TagLib.Id3v2 {
 		private uint GetTextAsUInt32 (ByteVector ident, int index)
 		{
 			string text = GetTextAsString (ident);
-			
+
 			if (text == null)
 				return 0;
-			
+
 			string [] values = text.Split (new char [] {'/'},
 				index + 2);
-			
+
 			if (values.Length < index + 1)
 				return 0;
-			
+
 			uint result;
 			if (uint.TryParse (values [index], out result))
 				return result;
-			
+
 			return 0;
 		}
 
@@ -1114,7 +1129,7 @@ namespace TagLib.Id3v2 {
 			//Get the UFID frame, frame will be null if nonexistant
 			UniqueFileIdentifierFrame frame = UniqueFileIdentifierFrame.Get(
 				this, owner, false);
-			
+
 			//If the frame existed: frame.Identifier is a bytevector, get a string
 			string result = frame == null ? null : frame.Identifier.ToString();
 			return string.IsNullOrEmpty (result) ? null : result;
@@ -1161,25 +1176,25 @@ namespace TagLib.Id3v2 {
 					else
 						continue;
 				}
-				
+
 				Frame tmp = frame_list [i];
 				frame_list [i] = swapping;
 				swapping = tmp;
-				
+
 				if (swapping == frame)
 					return;
 			}
-			
+
 			if (swapping != null)
 				frame_list.Add (swapping);
 		}
-		
-		#endregion
-		
-		
-		
+
+#endregion
+
+
+
 #region IEnumerable
-		
+
 		/// <summary>
 		///    Gets an enumerator for enumerating through the frames.
 		/// </summary>
@@ -1191,18 +1206,18 @@ namespace TagLib.Id3v2 {
 		{
 			return frame_list.GetEnumerator ();
 		}
-		
+
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return frame_list.GetEnumerator ();
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region TagLib.Tag
-		
+
 		/// <summary>
 		///    Gets the tag types contained in the current instance.
 		/// </summary>
@@ -1212,7 +1227,7 @@ namespace TagLib.Id3v2 {
 		public override TagTypes TagTypes {
 			get {return TagTypes.Id3v2;}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the title for the media described by the
 		///    current instance.
@@ -1230,7 +1245,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsString (FrameType.TIT2);}
 			set {SetTextFrame (FrameType.TIT2, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the sort names of the Title of the
 		///    media represented by the current instance.
@@ -1238,7 +1253,7 @@ namespace TagLib.Id3v2 {
 		/// <value>
 		///    A <see cref="string" /> containing the sort names for
 		///    the Title of the media described by the current instance,
-		///    or null if no value is present. 
+		///    or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TSOT" Text
@@ -1267,7 +1282,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsArray (FrameType.TPE1);}
 			set {SetTextFrame (FrameType.TPE1, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the sort names of the performers or artists
 		///    who performed in the media described by the current instance.
@@ -1276,7 +1291,7 @@ namespace TagLib.Id3v2 {
 		///    A <see cref="string[]" /> containing the sort names for
 		///    the performers or artists who performed in the media
 		///    described by the current instance, or an empty array if
-		///    no value is present. 
+		///    no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TSOP" Text
@@ -1288,7 +1303,7 @@ namespace TagLib.Id3v2 {
 		}
 
 		/// <summary>
-		///    Gets and sets the sort names of the band or artist who is 
+		///    Gets and sets the sort names of the band or artist who is
 		///    credited in the creation of the entire album or collection
 		///    containing the media described by the current instance.
 		/// </summary>
@@ -1296,7 +1311,7 @@ namespace TagLib.Id3v2 {
 		///    A <see cref="string[]" /> containing the sort names for
 		///    the performers or artists who performed in the media
 		///    described by the current instance, or an empty array if
-		///    no value is present. 
+		///    no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TSO2" Text
@@ -1326,7 +1341,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsArray (FrameType.TPE2);}
 			set {SetTextFrame (FrameType.TPE2, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the composers of the media represented by
 		///    the current instance.
@@ -1344,7 +1359,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsArray (FrameType.TCOM);}
 			set {SetTextFrame (FrameType.TCOM, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the sort names of the composers of the
 		///    media represented by the current instance.
@@ -1353,7 +1368,7 @@ namespace TagLib.Id3v2 {
 		///    A <see cref="string[]" /> containing the sort names for
 		///    the performers or artists who performed in the media
 		///    described by the current instance, or an empty array if
-		///    no value is present. 
+		///    no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TSOC" Text
@@ -1381,7 +1396,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsString (FrameType.TALB);}
 			set {SetTextFrame (FrameType.TALB, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the sort names of the Album title of the
 		///    media represented by the current instance.
@@ -1389,7 +1404,7 @@ namespace TagLib.Id3v2 {
 		/// <value>
 		///    A <see cref="string" /> containing the sort names for
 		///    the Title in the media described by the current instance,
-		///    or null if no value is present. 
+		///    or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TSOA" Text
@@ -1399,7 +1414,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsString (FrameType.TSOA);}
 			set {SetTextFrame (FrameType.TSOA, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets a user comment on the media represented by
 		///    the current instance.
@@ -1423,26 +1438,26 @@ namespace TagLib.Id3v2 {
 			}
 			set {
 				CommentsFrame frame;
-				
+
 				if (string.IsNullOrEmpty (value)) {
 					while ((frame = CommentsFrame
 						.GetPreferred (this,
 							string.Empty,
 							Language)) != null)
 						RemoveFrame (frame);
-					
+
 					return;
 				}
-				
+
 				frame = CommentsFrame.Get (this, String.Empty,
 					Language, true);
-				
+
 				frame.Text = value;
 				frame.TextEncoding = DefaultEncoding;
 				MakeFirstOfType (frame);
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the genres of the media represented by the
 		///    current instance.
@@ -1459,29 +1474,29 @@ namespace TagLib.Id3v2 {
 		public override string [] Genres {
 			get {
 				string [] text = GetTextAsArray (FrameType.TCON);
-				
+
 				if (text.Length == 0)
 					return text;
-				
+
 				List<string> list = new List<string> ();
-				
+
 				foreach (string genre in text) {
 					if (string.IsNullOrEmpty (genre))
 						continue;
-					
+
 					// The string may just be a genre
 					// number.
-					
+
 					string genre_from_index =
 						TagLib.Genres.IndexToAudio (
 							genre);
-					
+
 					if (genre_from_index != null)
 						list.Add (genre_from_index);
 					else
 						list.Add (genre);
 				}
-				
+
 				return list.ToArray ();
 			}
 			set {
@@ -1489,24 +1504,24 @@ namespace TagLib.Id3v2 {
 					SetTextFrame (FrameType.TCON, value);
 					return;
 				}
-				
+
 				// Clone the array so changes made won't effect
 				// the passed array.
 				value = (string []) value.Clone ();
-				
+
 				for (int i = 0; i < value.Length; i ++) {
 					int index = TagLib.Genres.AudioToIndex (
 						value [i]);
-					
+
 					if (index != 255)
 						value [i] = index.ToString (
 							CultureInfo.InvariantCulture);
 				}
-				
+
 				SetTextFrame (FrameType.TCON, value);
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the year that the media represented by the
 		///    current instance was recorded.
@@ -1524,25 +1539,25 @@ namespace TagLib.Id3v2 {
 		public override uint Year {
 			get {
 				string text = GetTextAsString (FrameType.TDRC);
-				
+
 				if (text == null || text.Length < 4)
 					return 0;
-				
+
 				uint value;
 				if (uint.TryParse (text.Substring (0, 4),
 					out value))
 					return value;
-				
+
 				return 0;
 			}
 			set {
 				if (value > 9999)
 					value = 0;
-				
+
 				SetNumberFrame (FrameType.TDRC, value, 0);
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the position of the media represented by
 		///    the current instance in its containing album.
@@ -1560,7 +1575,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsUInt32 (FrameType.TRCK, 0);}
 			set {SetNumberFrame (FrameType.TRCK, value, TrackCount);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of tracks in the album
 		///    containing the media represented by the current instance.
@@ -1578,7 +1593,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsUInt32 (FrameType.TRCK, 1);}
 			set {SetNumberFrame (FrameType.TRCK, Track, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of the disc containing the media
 		///    represented by the current instance in the boxed set.
@@ -1596,7 +1611,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsUInt32 (FrameType.TPOS, 0);}
 			set {SetNumberFrame (FrameType.TPOS, value, DiscCount);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of discs in the boxed set
 		///    containing the media represented by the current instance.
@@ -1614,7 +1629,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsUInt32 (FrameType.TPOS, 1);}
 			set {SetNumberFrame (FrameType.TPOS, Disc, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the lyrics or script of the media
 		///    represented by the current instance.
@@ -1634,30 +1649,30 @@ namespace TagLib.Id3v2 {
 				UnsynchronisedLyricsFrame f =
 					UnsynchronisedLyricsFrame.GetPreferred (
 						this, string.Empty, Language);
-				
+
 				return f != null ? f.ToString () : null;
 			}
 			set {
 				UnsynchronisedLyricsFrame frame;
-				
+
 				if (string.IsNullOrEmpty (value)) {
 					while ((frame = UnsynchronisedLyricsFrame
 						.GetPreferred (this,
 							string.Empty,
 							Language)) != null)
 						RemoveFrame (frame);
-					
+
 					return;
 				}
-				
+
 				frame = UnsynchronisedLyricsFrame.Get (this,
 						String.Empty, Language, true);
-				
+
 				frame.Text = value;
 				frame.TextEncoding = DefaultEncoding;
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the grouping on the album which the media
 		///    in the current instance belongs to.
@@ -1675,7 +1690,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsString (FrameType.TIT1);}
 			set {SetTextFrame (FrameType.TIT1, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the number of beats per minute in the audio
 		///    of the media represented by the current instance.
@@ -1692,20 +1707,20 @@ namespace TagLib.Id3v2 {
 		public override uint BeatsPerMinute {
 			get {
 				string text = GetTextAsString (FrameType.TBPM);
-				
+
 				if (text == null)
 					return 0;
-				
+
 				double result;
 				if (double.TryParse (text, out result) &&
 					result >= 0.0)
 					return (uint) Math.Round (result);
-				
+
 				return 0;
 			}
 			set {SetNumberFrame (FrameType.TBPM, value, 0);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the conductor or director of the media
 		///    represented by the current instance.
@@ -1723,7 +1738,7 @@ namespace TagLib.Id3v2 {
 			get {return GetTextAsString (FrameType.TPE3);}
 			set {SetTextFrame (FrameType.TPE3, value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the copyright information for the media
 		///    represented by the current instance.
@@ -1747,8 +1762,8 @@ namespace TagLib.Id3v2 {
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the MusicBrainz
-		///    ArtistID for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    ArtistID for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TXXX:MusicBrainz Artist Id" frame.
@@ -1764,8 +1779,8 @@ namespace TagLib.Id3v2 {
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the MusicBrainz
-		///    ReleaseID for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    ReleaseID for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TXXX:MusicBrainz Album Id" frame.
@@ -1781,8 +1796,8 @@ namespace TagLib.Id3v2 {
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the MusicBrainz
-		///    ReleaseArtistID for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    ReleaseArtistID for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TXXX:MusicBrainz Album Artist Id" frame.
@@ -1792,14 +1807,14 @@ namespace TagLib.Id3v2 {
 			get {return GetUserTextAsString ("MusicBrainz Album Artist Id");}
 			set {SetUserTextAsString ("MusicBrainz Album Artist Id",value);}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the MusicBrainz TrackID
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the MusicBrainz
-		///    TrackID for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    TrackID for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "UFID:http://musicbrainz.org" frame.
@@ -1815,8 +1830,8 @@ namespace TagLib.Id3v2 {
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the MusicBrainz
-		///    DiscID for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    DiscID for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TXXX:MusicBrainz Disc Id" frame.
@@ -1832,8 +1847,8 @@ namespace TagLib.Id3v2 {
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the MusicIP PUID
-		///    for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TXXX:MusicIP PUID" frame.
@@ -1849,8 +1864,8 @@ namespace TagLib.Id3v2 {
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the Amazon Id
-		///    for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TXXX:ASIN" frame.
@@ -1866,8 +1881,8 @@ namespace TagLib.Id3v2 {
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the MusicBrainz
-		///    ReleaseStatus for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    ReleaseStatus for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TXXX:MusicBrainz Album Status" frame.
@@ -1883,8 +1898,8 @@ namespace TagLib.Id3v2 {
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the MusicBrainz
-		///    ReleaseType for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    ReleaseType for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TXXX:MusicBrainz Album Type" frame.
@@ -1900,8 +1915,8 @@ namespace TagLib.Id3v2 {
 		/// </summary>
 		/// <value>
 		///    A <see cref="string" /> containing the MusicBrainz
-		///    ReleaseCountry for the media described by the current 
-		///    instance, or null if no value is present. 
+		///    ReleaseCountry for the media described by the current
+		///    instance, or null if no value is present.
 		/// </value>
 		/// <remarks>
 		///    This property is implemented using the "TXXX:MusicBrainz Album Release Country" frame.
@@ -1931,11 +1946,18 @@ namespace TagLib.Id3v2 {
 				if (text == null) {
 					return double.NaN;
 				}
-				if (text.ToLower(CultureInfo.InvariantCulture).EndsWith("db")) {
+#if netstandard1_4
+                if (text.ToLower().EndsWith("db"))
+                {
+                    text = text.Substring(0, text.Length - 2).Trim();
+                }
+#else
+                if (text.ToLower(CultureInfo.InvariantCulture).EndsWith("db")) {
 					text = text.Substring (0, text.Length - 2).Trim();
 				}
-				
-				if (double.TryParse (text, NumberStyles.Float,
+#endif
+
+                if (double.TryParse (text, NumberStyles.Float,
 					CultureInfo.InvariantCulture, out value)) {
 					return value;
 				}
@@ -2004,11 +2026,18 @@ namespace TagLib.Id3v2 {
 				if (text == null) {
 					return double.NaN;
 				}
-				if (text.ToLower(CultureInfo.InvariantCulture).EndsWith("db")) {
+#if netstandard1_4
+                if (text.ToLower().EndsWith("db"))
+                {
+                    text = text.Substring(0, text.Length - 2).Trim();
+                }
+#else
+                if (text.ToLower(CultureInfo.InvariantCulture).EndsWith("db")) {
 					text = text.Substring (0, text.Length - 2).Trim();
 				}
-				
-				if (double.TryParse (text, NumberStyles.Float,
+#endif
+
+                if (double.TryParse (text, NumberStyles.Float,
 					CultureInfo.InvariantCulture, out value)) {
 					return value;
 				}
@@ -2057,7 +2086,7 @@ namespace TagLib.Id3v2 {
 				}
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets a collection of pictures associated with
 		///    the media represented by the current instance.
@@ -2079,23 +2108,23 @@ namespace TagLib.Id3v2 {
 			}
 			set {
 				RemoveFrames(FrameType.APIC);
-				
+
 				if(value == null || value.Length == 0)
 					return;
-				
+
 				foreach(IPicture picture in value) {
 					AttachedPictureFrame frame =
 						picture as AttachedPictureFrame;
-					
+
 					if (frame == null)
 						frame = new AttachedPictureFrame (
 							picture);
-					
+
 					AddFrame (frame);
 				}
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets whether or not the current instance is empty.
 		/// </summary>
@@ -2106,7 +2135,7 @@ namespace TagLib.Id3v2 {
 		public override bool IsEmpty {
 			get {return frame_list.Count == 0;}
 		}
-		
+
 		/// <summary>
 		///    Clears the values stored in the current instance.
 		/// </summary>
@@ -2114,7 +2143,7 @@ namespace TagLib.Id3v2 {
 		{
 			frame_list.Clear ();
 		}
-		
+
 		/// <summary>
 		///    Gets and sets whether or not the album described by the
 		///    current instance is a compilation.
@@ -2135,7 +2164,7 @@ namespace TagLib.Id3v2 {
 			}
 			set {SetTextFrame (FrameType.TCMP, value ? "1" : null);}
 		}
-		
+
 		/// <summary>
 		///    Copies the values from the current instance to another
 		///    <see cref="TagLib.Tag" />, optionally overwriting
@@ -2162,14 +2191,14 @@ namespace TagLib.Id3v2 {
 		{
 			if (target == null)
 				throw new ArgumentNullException ("target");
-			
+
 			TagLib.Id3v2.Tag match = target as TagLib.Id3v2.Tag;
-			
+
 			if (match == null) {
 				base.CopyTo (target, overwrite);
 				return;
 			}
-			
+
 			List<Frame> frames = new List<Frame> (frame_list);
 			while (frames.Count > 0) {
 				ByteVector ident = frames [0].FrameId;
@@ -2183,13 +2212,13 @@ namespace TagLib.Id3v2 {
 							break;
 						}
 				}
-				
+
 				for (int i = 0; i < frames.Count;) {
 					if (frames [i].FrameId.Equals (ident)) {
 						if (copy)
 							match.frame_list.Add (
 								frames [i].Clone ());
-						
+
 						frames.RemoveAt (i);
 					} else {
 						i ++;
@@ -2197,13 +2226,13 @@ namespace TagLib.Id3v2 {
 				}
 			}
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region ICloneable
-		
+
 		/// <summary>
 		///    Creates a deep copy of the current instance.
 		/// </summary>
@@ -2217,18 +2246,18 @@ namespace TagLib.Id3v2 {
 			tag.header = header;
 			if (tag.extended_header != null)
 				tag.extended_header = extended_header.Clone ();
-			
+
 			foreach (Frame frame in frame_list)
 				tag.frame_list.Add (frame.Clone ());
-			
+
 			return tag;
 		}
-		
+
 		object ICloneable.Clone ()
 		{
 			return Clone ();
 		}
-		
+
 #endregion
 	}
 }

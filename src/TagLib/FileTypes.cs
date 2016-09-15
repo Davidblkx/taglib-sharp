@@ -6,7 +6,7 @@
 //   Aaron Bockover (abockover@novell.com)
 //
 // Copyright (C) 2006 Novell, Inc.
-// 
+//
 // This library is free software; you can redistribute it and/or modify
 // it  under the terms of the GNU Lesser General Public License version
 // 2.1 as published by the Free Software Foundation.
@@ -23,6 +23,8 @@
 //
 
 using System;
+using System.Reflection;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace TagLib {
@@ -45,7 +47,7 @@ namespace TagLib {
 		///    cref="File" /> subclasses that support them.
 		/// </summary>
 		private static Dictionary<string, Type> file_types;
-		
+
 		/// <summary>
 		///    Contains a static array of file types contained in the
 		///    TagLib# assembly.
@@ -85,7 +87,7 @@ namespace TagLib {
 			typeof(TagLib.Tiff.Rw2.File),
 			typeof(TagLib.WavPack.File)
 		};
-		
+
 		/// <summary>
 		///    Constructs and initializes the <see cref="FileTypes" />
 		///    class by registering the default types.
@@ -94,7 +96,7 @@ namespace TagLib {
 		{
 			Init();
 		}
-		
+
 		/// <summary>
 		///    Initializes the class by registering the default types.
 		/// </summary>
@@ -102,13 +104,13 @@ namespace TagLib {
 		{
 			if(file_types != null)
 				return;
-			
+
 			file_types = new Dictionary<string, Type>();
-			
+
 			foreach(Type type in static_file_types)
 				Register (type);
 		}
-		
+
 		/// <summary>
 		///    Registers a <see cref="File" /> subclass to be used when
 		///    creating files via <see cref="File.Create(string)" />.
@@ -123,16 +125,20 @@ namespace TagLib {
 		/// </remarks>
 		public static void Register (Type type)
 		{
-			Attribute [] attrs = Attribute.GetCustomAttributes (type,
+#if !netstandard1_4
+            Attribute [] attrs = Attribute.GetCustomAttributes (type,
 				typeof(SupportedMimeType), false);
-			
-			if(attrs == null || attrs.Length == 0)
+#else
+            Attribute[] attrs = typeof(SupportedMimeType).GetTypeInfo().GetCustomAttributes(false).ToArray();
+#endif
+
+            if (attrs == null || attrs.Length == 0)
 				return;
-			
+
 			foreach(SupportedMimeType attr in attrs)
 				file_types.Add(attr.MimeType, type);
 		}
-		
+
 		/// <summary>
 		///    Gets a dictionary containing all the supported mime-types
 		///    and file classes used by <see cref="File.Create(string)"

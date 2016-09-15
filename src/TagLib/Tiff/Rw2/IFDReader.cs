@@ -126,8 +126,12 @@ namespace TagLib.Tiff.Rw2
 
 		public void CloseStream (System.IO.Stream stream)
 		{
-			stream.Close ();
-		}
+#if !netstandard1_4
+            stream.Close ();
+#else
+            stream.Dispose();
+#endif
+        }
 
 		public System.IO.Stream ReadStream  {
 			get { return stream; }

@@ -8,7 +8,7 @@
 //   Entagged#
 //
 // Copyright (C) 2005-2006 Novell, Inc.
-// 
+//
 // This library is free software; you can redistribute it and/or modify
 // it  under the terms of the GNU Lesser General Public License version
 // 2.1 as published by the Free Software Foundation.
@@ -55,7 +55,7 @@ namespace TagLib {
 	///    <code lang="C++">
 	/// #using &lt;System.dll>
 	/// #using &lt;taglib-sharp.dll>
-	/// 
+	///
 	/// using System;
 	/// using TagLib;
 	///
@@ -108,7 +108,7 @@ namespace TagLib {
 			: base(message)
 		{
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="UnsupportedFormatException" /> with the default
@@ -117,7 +117,7 @@ namespace TagLib {
 		public UnsupportedFormatException () : base()
 		{
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="UnsupportedFormatException" /> with a specified
@@ -136,29 +136,31 @@ namespace TagLib {
 			: base (message, innerException)
 		{
 		}
-		
-		/// <summary>
-		///    Constructs and initializes a new instance of <see
-		///    cref="UnsupportedFormatException" /> from a specified
-		///    serialization info and streaming context.
-		/// </summary>
-		/// <param name="info">
-		///    A <see cref="SerializationInfo" /> object containing the
-		///    serialized data to be used for the new instance.
-		/// </param>
-		/// <param name="context">
-		///    A <see cref="StreamingContext" /> object containing the
-		///    streaming context information for the new instance.
-		/// </param>
-		/// <remarks>
-		///    This constructor is implemented because <see
-		///    cref="UnsupportedFormatException" /> implements the <see
-		///    cref="ISerializable" /> interface.
-		/// </remarks>
-		protected UnsupportedFormatException (SerializationInfo info,
+
+#if !netstandard1_4
+        /// <summary>
+        ///    Constructs and initializes a new instance of <see
+        ///    cref="UnsupportedFormatException" /> from a specified
+        ///    serialization info and streaming context.
+        /// </summary>
+        /// <param name="info">
+        ///    A <see cref="SerializationInfo" /> object containing the
+        ///    serialized data to be used for the new instance.
+        /// </param>
+        /// <param name="context">
+        ///    A <see cref="StreamingContext" /> object containing the
+        ///    streaming context information for the new instance.
+        /// </param>
+        /// <remarks>
+        ///    This constructor is implemented because <see
+        ///    cref="UnsupportedFormatException" /> implements the <see
+        ///    cref="ISerializable" /> interface.
+        /// </remarks>
+        protected UnsupportedFormatException (SerializationInfo info,
 		                                      StreamingContext context)
 			: base(info, context)
 		{
 		}
+#endif
 	}
 }

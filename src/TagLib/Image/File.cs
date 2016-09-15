@@ -22,6 +22,7 @@
 //
 
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 
 using TagLib.Jpeg;
@@ -214,14 +215,25 @@ namespace TagLib.Image
 			EnsureAvailableTags ();
 			var from_tag = file.ImageTag;
 			var to_tag = ImageTag;
-			foreach (var prop in typeof (TagLib.Image.ImageTag).GetProperties ()) {
+#if !netstandard1_4
+            foreach (var prop in typeof (TagLib.Image.ImageTag).GetProperties ()) {
 				if (!prop.CanWrite || prop.Name == "TagTypes")
 					continue;
 
 				var value = prop.GetValue (from_tag, null);
 				prop.SetValue (to_tag, value, null);
 			}
-		}
+#else
+            foreach (var prop in typeof(TagLib.Image.ImageTag).GetTypeInfo().DeclaredProperties)
+            {
+                if (!prop.CanWrite || prop.Name == "TagTypes")
+                    continue;
+
+                var value = prop.GetValue(from_tag, null);
+                prop.SetValue(to_tag, value, null);
+            }
+#endif
+        }
 
 #endregion
 

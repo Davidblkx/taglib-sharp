@@ -8,7 +8,7 @@
 //   Entagged#
 //
 // Copyright (C) 2006 Novell, Inc.
-// 
+//
 // This library is free software; you can redistribute it and/or modify
 // it  under the terms of the GNU Lesser General Public License version
 // 2.1 as published by the Free Software Foundation.
@@ -60,7 +60,7 @@ namespace TagLib {
 	///    <code lang="C++">
 	/// #using &lt;System.dll>
 	/// #using &lt;taglib-sharp.dll>
-	/// 
+	///
 	/// using System;
 	/// using TagLib;
 	///
@@ -112,7 +112,7 @@ namespace TagLib {
 		public CorruptFileException (string message) : base(message)
 		{
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="CorruptFileException" /> with the default
@@ -121,7 +121,7 @@ namespace TagLib {
 		public CorruptFileException () : base()
 		{
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="CorruptFileException" /> with a specified
@@ -136,11 +136,11 @@ namespace TagLib {
 		///    new exception. For example, previously caught exception.
 		/// </param>
 		public CorruptFileException (string message,
-		                             Exception innerException)
+									 Exception innerException)
 			: base (message, innerException)
 		{
 		}
-		
+#if !netstandard1_4
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="CorruptFileException" /> from a specified
@@ -160,9 +160,10 @@ namespace TagLib {
 		///    cref="ISerializable" /> interface.
 		/// </remarks>
 		protected CorruptFileException (SerializationInfo info,
-		                                StreamingContext context)
+										StreamingContext context)
 			: base(info, context)
 		{
 		}
+#endif
 	}
 }

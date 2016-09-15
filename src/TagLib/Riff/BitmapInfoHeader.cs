@@ -33,68 +33,68 @@ namespace TagLib.Riff
 	public struct BitmapInfoHeader : IVideoCodec
 	{
 #region Private Fields
-		
+
 		/// <summary>
 		///    Contains the size of the header.
 		/// </summary>
-		uint size; 
-		
+		uint size;
+
 		/// <summary>
 		///    Contains the video width.
 		/// </summary>
-		uint width; 
-		
+		uint width;
+
 		/// <summary>
 		///    Contains the video height.
 		/// </summary>
-		uint height; 
-		
+		uint height;
+
 		/// <summary>
 		///    Contains the number of planes.
 		/// </summary>
-		ushort planes; 
-		
+		ushort planes;
+
 		/// <summary>
 		///    Contains the bit count.
 		/// </summary>
-		ushort bit_count; 
-		
+		ushort bit_count;
+
 		/// <summary>
 		///    Contains the compression (codec) ID.
 		/// </summary>
-		ByteVector compression_id; 
-		
+		ByteVector compression_id;
+
 		/// <summary>
 		///    Contains the size of the image.
 		/// </summary>
-		uint size_of_image; 
-		
+		uint size_of_image;
+
 		/// <summary>
 		///    Contains the number of X pixels per meter.
 		/// </summary>
-		uint x_pixels_per_meter; 
-		
+		uint x_pixels_per_meter;
+
 		/// <summary>
 		///    Contains the number of Y pixels per meter.
 		/// </summary>
-		uint y_pixels_per_meter; 
-		
+		uint y_pixels_per_meter;
+
 		/// <summary>
 		///    Contains the number of colors used.
 		/// </summary>
-		uint colors_used; 
-		
+		uint colors_used;
+
 		/// <summary>
 		///    Contains the number of important colors.
 		/// </summary>
 		uint colors_important;
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Constructors
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="BitmapInfoHeader" /> by reading the raw structure
@@ -114,7 +114,7 @@ namespace TagLib.Riff
 		public BitmapInfoHeader (ByteVector data) : this (data, 0)
 		{
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="BitmapInfoHeader" /> by reading the raw structure
@@ -143,15 +143,15 @@ namespace TagLib.Riff
 		{
 			if (data == null)
 				throw new ArgumentNullException ("data");
-			
+
 			if (offset + 40 > data.Count)
 				throw new CorruptFileException (
 					"Expected 40 bytes.");
-			
+
 			if (offset < 0)
 				throw new ArgumentOutOfRangeException (
 					"offset");
-			
+
 			size               = data.Mid (offset +  0, 4).ToUInt (false);
 			width              = data.Mid (offset +  4, 4).ToUInt (false);
 			height             = data.Mid (offset +  8, 4).ToUInt (false);
@@ -164,13 +164,13 @@ namespace TagLib.Riff
 			colors_used        = data.Mid (offset + 32, 4).ToUInt (false);
 			colors_important   = data.Mid (offset + 36, 4).ToUInt (false);
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Public Properties
-		
+
 		/// <summary>
 		///    Gets the size of the structure in bytes.
 		/// </summary>
@@ -181,7 +181,7 @@ namespace TagLib.Riff
 		public uint HeaderSize {
 			get {return size;}
 		}
-		
+
 		/// <summary>
 		///    Gets the number of planes in the image.
 		/// </summary>
@@ -192,7 +192,7 @@ namespace TagLib.Riff
 		public ushort Planes {
 			get {return planes;}
 		}
-		
+
 		/// <summary>
 		///    Gets the number of bits per pixel.
 		/// </summary>
@@ -204,7 +204,7 @@ namespace TagLib.Riff
 		public ushort BitCount {
 			get {return bit_count;}
 		}
-		
+
 		/// <summary>
 		///    Gets the compression ID for image.
 		/// </summary>
@@ -216,7 +216,7 @@ namespace TagLib.Riff
 		public ByteVector CompressionId {
 			get {return compression_id;}
 		}
-		
+
 		/// <summary>
 		///    Gets the size of the image in bytes.
 		/// </summary>
@@ -227,7 +227,7 @@ namespace TagLib.Riff
 		public uint ImageSize {
 			get {return size_of_image;}
 		}
-		
+
 		/// <summary>
 		///    Gets the horizontal resolution of the target device.
 		/// </summary>
@@ -239,7 +239,7 @@ namespace TagLib.Riff
 		public uint XPixelsPerMeter {
 			get {return x_pixels_per_meter;}
 		}
-		
+
 		/// <summary>
 		///    Gets the vertical resolution of the target device.
 		/// </summary>
@@ -251,7 +251,7 @@ namespace TagLib.Riff
 		public uint YPixelsPerMeter {
 			get {return y_pixels_per_meter;}
 		}
-		
+
 		/// <summary>
 		///    Gets the number of colors in the image.
 		/// </summary>
@@ -262,7 +262,7 @@ namespace TagLib.Riff
 		public uint ColorsUsed {
 			get {return colors_used;}
 		}
-		
+
 		/// <summary>
 		///    Gets the number of colors important in displaying the
 		///    image.
@@ -274,13 +274,13 @@ namespace TagLib.Riff
 		public uint ImportantColors {
 			get {return colors_important;}
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region IVideoCodec
-		
+
 		/// <summary>
 		///    Gets the width of the video represented by the current
 		///    instance.
@@ -292,7 +292,7 @@ namespace TagLib.Riff
 		public int VideoWidth  {
 			get {return (int)width;}
 		}
-		
+
 		/// <summary>
 		///    Gets the height of the video represented by the current
 		///    instance.
@@ -304,7 +304,7 @@ namespace TagLib.Riff
 		public int VideoHeight {
 			get {return (int)height;}
 		}
-		
+
 		/// <summary>
 		///    Gets the types of media represented by the current
 		///    instance.
@@ -315,7 +315,7 @@ namespace TagLib.Riff
 		public MediaTypes MediaTypes {
 			get {return MediaTypes.Video;}
 		}
-		
+
 		/// <summary>
 		///    Gets the duration of the media represented by the current
 		///    instance.
@@ -326,7 +326,7 @@ namespace TagLib.Riff
 		public TimeSpan Duration {
 			get {return TimeSpan.Zero;}
 		}
-		
+
 		/// <summary>
 		///    Gets a text description of the media represented by the
 		///    current instance.
@@ -337,9 +337,17 @@ namespace TagLib.Riff
 		/// </value>
 		public string Description {
 			get {
-				string id = CompressionId.ToString (StringType.UTF8)
+
+#if !netstandard1_4
+                string id = CompressionId.ToString (StringType.UTF8)
 					.ToUpper (CultureInfo.InvariantCulture);
-				switch (id)
+#else
+                string id = CompressionId.ToString(StringType.UTF8)
+                    .ToUpper();
+#endif
+
+
+                switch (id)
 				{
 				case "AEMI":
 					return "Array VideoONE MPEG1-I capture";
@@ -735,13 +743,13 @@ namespace TagLib.Riff
 				}
 			}
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region IEquatable
-		
+
 		/// <summary>
 		///    Generates a hash code for the current instance.
 		/// </summary>
@@ -759,7 +767,7 @@ namespace TagLib.Riff
 					colors_important);
 			}
 		}
-		
+
 		/// <summary>
 		///    Checks whether or not the current instance is equal to
 		///    another object.
@@ -777,10 +785,10 @@ namespace TagLib.Riff
 		{
 			if (!(other is BitmapInfoHeader))
 				return false;
-			
+
 			return Equals ((BitmapInfoHeader) other);
 		}
-		
+
 		/// <summary>
 		///    Checks whether or not the current instance is equal to
 		///    another instance of <see cref="BitmapInfoHeader" />.
@@ -806,7 +814,7 @@ namespace TagLib.Riff
 				colors_used == other.colors_used &&
 				colors_important == other.colors_important;
 		}
-		
+
 		/// <summary>
 		///    Gets whether or not two instances of <see
 		///    cref="WaveFormatEx" /> are equal to eachother.
@@ -827,7 +835,7 @@ namespace TagLib.Riff
 		{
 			return first.Equals (second);
 		}
-		
+
 		/// <summary>
 		///    Gets whether or not two instances of <see
 		///    cref="BitmapInfoHeader" /> differ.

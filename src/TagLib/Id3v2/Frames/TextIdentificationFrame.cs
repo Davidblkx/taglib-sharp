@@ -10,7 +10,7 @@
 //
 // Copyright (C) 2005-2007 Brian Nickel
 // Copyright (C) 2002,2003 Scott Wheeler (Original Implementation)
-// 
+//
 // This library is free software; you can redistribute it and/or modify
 // it  under the terms of the GNU Lesser General Public License version
 // 2.1 as published by the Free Software Foundation.
@@ -44,7 +44,7 @@ namespace TagLib.Id3v2 {
 	///    <para>The following table contains types and descriptions as
 	///    found in the ID3 2.4.0 native frames specification. (Copyright
 	///    (C) Martin Nilsson 2000.)</para>
-	///    
+	///
 	///    <list type="table">
 	///       <listheader>
 	///          <term>ID</term>
@@ -372,17 +372,17 @@ namespace TagLib.Id3v2 {
 	public class TextInformationFrame : Frame
 	{
 		#region Private Fields
-		
+
 		/// <summary>
 		///    Contains the encoding to use for the text.
 		/// </summary>
 		private StringType encoding = Id3v2.Tag.DefaultEncoding;
-		
+
 		/// <summary>
 		///    Contains the text fields.
 		/// </summary>
 		private string [] text_fields = new string [0];
-		
+
 		/// <summary>
 		///    Contains the raw data from the frame, or <see
 		///    langword="null" /> if it has been processed.
@@ -393,18 +393,18 @@ namespace TagLib.Id3v2 {
 		///    unnecessary conversion.
 		/// </remarks>
 		private ByteVector raw_data = null;
-		
+
 		/// <summary>
 		///    Contains the ID3v2 version of <see cref="raw_data" />.
 		/// </summary>
 		private byte raw_version = 0;
-		
+
 		#endregion
-		
-		
-		
+
+
+
 		#region Constructors
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="TextInformationFrame" /> with a specified
@@ -424,7 +424,7 @@ namespace TagLib.Id3v2 {
 		{
 			this.encoding = encoding;
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="TextInformationFrame" /> with a specified
@@ -438,7 +438,7 @@ namespace TagLib.Id3v2 {
 			: this (ident, Id3v2.Tag.DefaultEncoding)
 		{
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="TextInformationFrame" /> by reading its raw
@@ -457,7 +457,7 @@ namespace TagLib.Id3v2 {
 		{
 			SetData (data, 0, version, true);
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="TextInformationFrame" /> by reading its raw
@@ -488,13 +488,13 @@ namespace TagLib.Id3v2 {
 		{
 			SetData (data, offset, version, false);
 		}
-		
+
 		#endregion
-		
-		
-		
+
+
+
 		#region Public Properties
-		
+
 		/// <summary>
 		///    Gets the text contained in the current instance.
 		/// </summary>
@@ -513,7 +513,7 @@ namespace TagLib.Id3v2 {
 				return new StringCollection (Text);
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the text contained in the current
 		///    instance.
@@ -551,7 +551,7 @@ namespace TagLib.Id3v2 {
 					new string [0];
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the text encoding to use when rendering
 		///    the current instance.
@@ -572,13 +572,13 @@ namespace TagLib.Id3v2 {
 			}
 			set {encoding = value;}
 		}
-		
+
 		#endregion
-		
-		
-		
+
+
+
 		#region Public Methods
-		
+
 		/// <summary>
 		///    Sets the text contained in the current instance.
 		/// </summary>
@@ -592,7 +592,7 @@ namespace TagLib.Id3v2 {
 			raw_data = null;
 			Text = fields != null ? fields.ToArray () : null;
 		}
-		
+
 		/// <summary>
 		///    Sets the text contained in the current instance.
 		/// </summary>
@@ -606,7 +606,7 @@ namespace TagLib.Id3v2 {
 			raw_data = null;
 			Text = text;
 		}
-		
+
 		/// <summary>
 		///    Gets a string representation of the current instance.
 		/// </summary>
@@ -618,7 +618,7 @@ namespace TagLib.Id3v2 {
 			ParseRawData ();
 			return string.Join ("; ", Text);
 		}
-		
+
 		/// <summary>
 		///    Renders the current instance, encoded in a specified
 		///    ID3v2 version.
@@ -635,44 +635,44 @@ namespace TagLib.Id3v2 {
 		{
 			if (version != 3 || FrameId != FrameType.TDRC)
 				return base.Render (version);
-			
+
 			string text = ToString ();
 			if (text.Length < 10 || text [4] != '-' ||
 				text [7] != '-')
 				return base.Render (version);
-			
+
 			ByteVector output = new ByteVector ();
 			TextInformationFrame f;
-			
+
 			f = new TextInformationFrame (FrameType.TYER, encoding);
 			f.Text = new string [] {text.Substring (0, 4)};
 			output.Add (f.Render (version));
-			
+
 			f = new TextInformationFrame (FrameType.TDAT, encoding);
 			f.Text = new string [] {
 				text.Substring (5, 2) + text.Substring (8, 2)
 			};
 			output.Add (f.Render (version));
-			
+
 			if (text.Length < 16 || text [10] != 'T' ||
 				text [13] != ':')
 				return output;
-			
+
 			f = new TextInformationFrame (FrameType.TIME, encoding);
 			f.Text = new string [] {
 				text.Substring (11, 2) + text.Substring (14, 2)
 			};
 			output.Add (f.Render (version));
-			
+
 			return output;
 		}
-		
+
 		#endregion
-		
-		
-		
+
+
+
 		#region Public Static Methods
-		
+
 		/// <summary>
 		///    Gets a <see cref="TextInformationFrame" /> object of a
 		///    specified type from a specified tag, optionally creating
@@ -719,28 +719,28 @@ namespace TagLib.Id3v2 {
 		{
 			if (tag == null)
 				throw new ArgumentNullException ("tag");
-			
+
 			if (ident == null)
 				throw new ArgumentNullException ("ident");
-			
+
 			if (ident.Count != 4)
 				throw new ArgumentException (
 					"Identifier must be four bytes long.",
 					"ident");
-			
+
 			foreach (TextInformationFrame frame in
 				tag.GetFrames<TextInformationFrame> (ident))
 				return frame;
-			
+
 			if (!create)
 				return null;
-			
+
 			TextInformationFrame new_frame =
 				new TextInformationFrame (ident, encoding);
 			tag.AddFrame (new_frame);
 			return new_frame;
 		}
-		
+
 		/// <summary>
 		///    Gets a <see cref="TextInformationFrame" /> object of a
 		///    specified type from a specified tag, optionally creating
@@ -777,7 +777,7 @@ namespace TagLib.Id3v2 {
 		{
 			return Get (tag, ident, Tag.DefaultEncoding, create);
 		}
-		
+
 		/// <summary>
 		///    Gets a <see cref="TextInformationFrame" /> object of a
 		///    specified type from a specified tag.
@@ -808,13 +808,13 @@ namespace TagLib.Id3v2 {
 		{
 			return Get (tag, ident, false);
 		}
-		
+
 		#endregion
-		
-		
-		
+
+
+
 		#region Protected Methods
-		
+
 		/// <summary>
 		///    Populates the values in the current instance by parsing
 		///    its field data in a specified version.
@@ -833,7 +833,7 @@ namespace TagLib.Id3v2 {
 			raw_data = data;
 			raw_version = version;
 		}
-		
+
 		/// <summary>
 		///    Performs the actual parsing of the raw data.
 		/// </summary>
@@ -849,30 +849,30 @@ namespace TagLib.Id3v2 {
 		{
 			if (raw_data == null)
 				return;
-			
+
 			ByteVector data = raw_data;
 			raw_data = null;
-			
+
 			// read the string data type (the first byte of the
 			// field data)
 			encoding = (StringType) data [0];
 			List<string> field_list = new List<string> ();
-			
+
 			ByteVector delim = ByteVector.TextDelimiter (encoding);
-			
+
 			if (raw_version > 3 || FrameId == FrameType.TXXX) {
 				field_list.AddRange (data.ToStrings (encoding, 1));
 			} else if (data.Count > 1 && !data.Mid (1,
 				delim.Count).Equals (delim)) {
 				string value = data.ToString (encoding, 1,
 					data.Count - 1);
-				
+
 				// Truncate values containing NULL bytes
 				int null_index = value.IndexOf ('\x00');
 				if (null_index >= 0) {
 					value = value.Substring (0, null_index);
 				}
-				
+
 				if (FrameId == FrameType.TCOM ||
 					FrameId == FrameType.TEXT ||
 					FrameId == FrameType.TOLY ||
@@ -887,28 +887,28 @@ namespace TagLib.Id3v2 {
 						int closing = value.IndexOf (')');
 						if (closing < 0)
 							break;
-						
+
 						string number = value.Substring (1,
 								closing - 1);
-						
+
 						field_list.Add (number);
-						
+
 						value = value.Substring (
 							closing + 1).TrimStart ('/', ' ');
-						
+
 						string text = Genres.IndexToAudio (number);
 						if (text != null && value.StartsWith (text))
 							value = value.Substring (text.Length)
 								.TrimStart ('/', ' ');
 					}
-					
+
 					if (value.Length > 0)
 						field_list.AddRange (value.Split (new char [] {'/'}));
 				} else {
 					field_list.Add (value);
 				}
 			}
-			
+
 			// Bad tags may have one or more nul characters at the
 			// end of a string, resulting in empty strings at the
 			// end of the FieldList. Strip them off.
@@ -916,10 +916,10 @@ namespace TagLib.Id3v2 {
 				string.IsNullOrEmpty (field_list [
 					field_list.Count - 1]))
 				field_list.RemoveAt (field_list.Count - 1);
-			
+
 			text_fields = field_list.ToArray ();
 		}
-		
+
 		/// <summary>
 		///    Renders the values in the current instance into field
 		///    data for a specified version.
@@ -935,16 +935,16 @@ namespace TagLib.Id3v2 {
 		protected override ByteVector RenderFields (byte version) {
 			if (raw_data != null && raw_version == version)
 				return raw_data;
-			
+
 			StringType encoding = CorrectEncoding (TextEncoding,
 				version);
 			ByteVector v = new ByteVector ((byte) encoding);
 			string [] text = text_fields;
-			
+
 			bool txxx = FrameId == FrameType.TXXX;
-			
+
 			if (version > 3 || txxx) {
-				
+
 				if (txxx) {
 					if (text.Length == 0)
 						text = new string [] {null, null};
@@ -952,18 +952,18 @@ namespace TagLib.Id3v2 {
 						text = new string [] {text [0],
 							null};
 				}
-				
+
 				for (int i = 0; i < text.Length; i++) {
 					// Since the field list is null
 					// delimited, if this is not the first
 					// element in the list, append the
 					// appropriate delimiter for this
 					// encoding.
-					
+
 					if (i != 0)
 						v.Add (ByteVector.TextDelimiter (
 							encoding));
-						
+
 					if (text [i] != null)
 						v.Add (ByteVector.FromString (
 							text [i],
@@ -978,7 +978,7 @@ namespace TagLib.Id3v2 {
 						data.Append ("/").Append (s);
 						continue;
 					}
-					
+
 					if (prev_value_indexed =
 						byte.TryParse (s, out id))
 						data.AppendFormat (
@@ -987,24 +987,24 @@ namespace TagLib.Id3v2 {
 					else
 						data.Append (s);
 				}
-				
+
 				v.Add (ByteVector.FromString (data.ToString (),
 					encoding));
 			} else {
 				v.Add (ByteVector.FromString (
 					string.Join ("/", text), encoding));
 			}
-			
+
 			return v;
 		}
-		
-		
+
+
 #endregion
-		
-		
-		
+
+
+
 #region ICloneable
-		
+
 		/// <summary>
 		///    Creates a deep copy of the current instance.
 		/// </summary>
@@ -1024,12 +1024,12 @@ namespace TagLib.Id3v2 {
 			frame.raw_version = raw_version;
 			return frame;
 		}
-		
+
 #endregion
 	}
-	
-	
-	
+
+
+
 	/// <summary>
 	///    This class extends <see cref="TextInformationFrame" /> to provide
 	///    support for ID3v2 User Text Information (TXXX) Frames.
@@ -1037,7 +1037,7 @@ namespace TagLib.Id3v2 {
 	public class UserTextInformationFrame : TextInformationFrame
 	{
 #region Constructors
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="UserTextInformationFrame" /> with a specified
@@ -1063,7 +1063,7 @@ namespace TagLib.Id3v2 {
 		{
 			base.Text = new string [] {description};
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="UserTextInformationFrame" /> with a specified
@@ -1084,7 +1084,7 @@ namespace TagLib.Id3v2 {
 		{
 			base.Text = new string [] {description};
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="UserTextInformationFrame" /> by reading its raw
@@ -1102,7 +1102,7 @@ namespace TagLib.Id3v2 {
 			: base (data, version)
 		{
 		}
-		
+
 		/// <summary>
 		///    Constructs and initializes a new instance of <see
 		///    cref="UserTextInformationFrame" /> by reading its raw
@@ -1131,13 +1131,13 @@ namespace TagLib.Id3v2 {
 			: base (data, offset, header, version)
 		{
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Public Properties
-		
+
 		/// <summary>
 		///    Gets and sets the description stored in the current
 		///    instance.
@@ -1155,18 +1155,18 @@ namespace TagLib.Id3v2 {
 				string [] text = base.Text;
 				return text.Length > 0 ? text [0] : null;
 			}
-			
+
 			set {
 				string [] text = base.Text;
 				if (text.Length > 0)
 					text [0] = value;
 				else
 					text = new string [] {value};
-				
+
 				base.Text = text;
 			}
 		}
-		
+
 		/// <summary>
 		///    Gets and sets the text contained in the current
 		///    instance.
@@ -1185,32 +1185,32 @@ namespace TagLib.Id3v2 {
 				string [] text = base.Text;
 				if (text.Length < 2)
 					return new string [0];
-				
+
 				string [] new_text = new string [text.Length - 1];
 				for (int i = 0; i < new_text.Length; i ++)
 					new_text [i] = text [i+1];
-				
+
 				return new_text;
 			}
 			set {
 				string [] new_value = new string [
 					value != null ? (value.Length + 1) : 1];
-				
+
 				new_value [0] = Description;
-				
+
 				for (int i = 1; i < new_value.Length; i ++)
 					new_value [i] = value [i - 1];
-				
+
 				base.Text = new_value;
 			}
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Public Methods
-		
+
 		/// <summary>
 		///    Gets a string representation of the current instance.
 		/// </summary>
@@ -1224,13 +1224,13 @@ namespace TagLib.Id3v2 {
 				.Append ("] ")
 				.Append (base.ToString ()).ToString ();
 		}
-		
+
 #endregion
-		
-		
-		
+
+
+
 #region Public Static Methods
-		
+
 		/// <summary>
 		///    Gets a specified user text frame from the specified tag,
 		///    optionally creating it if it does not exist and optionally
@@ -1269,35 +1269,41 @@ namespace TagLib.Id3v2 {
 		{
 			if (tag == null)
 				throw new ArgumentNullException ("tag");
-			
+
 			if (description == null)
 				throw new ArgumentNullException ("description");
-			
+
 			if (description.Length == 0)
 				throw new ArgumentException (
 					"Description must not be empty.",
 					"description");
-					
-			StringComparison stringComparison =
+
+#if !netstandard1_4
+            StringComparison stringComparison =
 				caseSensitive ? StringComparison.InvariantCulture :
 					StringComparison.InvariantCultureIgnoreCase;
-			
-			foreach (UserTextInformationFrame frame in
+#else
+            StringComparison stringComparison =
+                caseSensitive ? StringComparison.Ordinal :
+                    StringComparison.OrdinalIgnoreCase;
+#endif
+
+            foreach (UserTextInformationFrame frame in
 				tag.GetFrames<UserTextInformationFrame> (
 					FrameType.TXXX))
 				if (description.Equals (frame.Description, stringComparison))
 					return frame;
-			
+
 			if (!create)
 				return null;
-			
+
 			UserTextInformationFrame new_frame =
 				new UserTextInformationFrame (description,
 					type);
 			tag.AddFrame (new_frame);
 			return new_frame;
 		}
-		
+
 		/// <summary>
 		///    Gets a specified user text frame from the specified tag,
 		///    optionally creating it if it does not exist.
@@ -1330,7 +1336,7 @@ namespace TagLib.Id3v2 {
 		{
 			return Get (tag, description, type, create, true);
 		}
-		
+
 		/// <summary>
 		///    Gets a specified user text frame from the specified tag,
 		///    optionally creating it if it does not exist.
@@ -1359,7 +1365,7 @@ namespace TagLib.Id3v2 {
 			return Get (tag, description, Tag.DefaultEncoding,
 				create);
 		}
-		
+
 		/// <summary>
 		///    Gets a specified user text frame from the specified tag.
 		/// </summary>
@@ -1381,7 +1387,7 @@ namespace TagLib.Id3v2 {
 		{
 			return Get (tag, description, false);
 		}
-		
+
 #endregion
 	}
 }
